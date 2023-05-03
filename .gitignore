@@ -1,0 +1,7 @@
+/venv
+/.idea
+.DS_Store
+version_create.bat
+bot.zip
+not.txt
+__pycache__
