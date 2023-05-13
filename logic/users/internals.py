@@ -1,8 +1,8 @@
 import uuid
-from typing import Optional, List
+from typing import Optional
 
 from connections import get_session_pool, bot
-from libs.ydb import get_or_generate_id, prepare_and_execute_query
+from libs.ydb import get_or_generate_id
 from logic.users.messages import format_list_of_users
 from logic.users.schemas import UserSchema
 from markups.root import get_root_reply_markup
@@ -131,18 +131,8 @@ def get_user(
     )
 
 
-def get_users_for_client(client_id: str) -> List[UserSchema]:
-    rows = prepare_and_execute_query(
-        'DECLARE $clientId AS String;'
-        'SELECT id, client_id, telegram_id, username, data, pending, owner FROM users '
-        'WHERE client_id=$clientId',
-        clientId=client_id
-    )
-    return UserSchema.parse_rows(rows)
-
-
 def get_formatted_list_of_users(client_id: str) -> str:
-    users = get_users_for_client(client_id=client_id)
+    users = UserSchema.get_for_client(client_id=client_id)
     return format_list_of_users(users=users)
 
 

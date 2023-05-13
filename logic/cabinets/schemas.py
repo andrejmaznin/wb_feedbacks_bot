@@ -1,8 +1,13 @@
+import logging
 from typing import List, Mapping, Optional
 
 from pydantic import BaseModel
 
 from libs.ydb import get_or_generate_id, prepare_and_execute_query
+from libs.ydb.utils import prepare_and_execute_query_async
+from logic.cabinets.consts import WB_HEADERS
+
+logger = logging.getLogger(__name__)
 
 
 class CabinetSchema(BaseModel):
@@ -10,16 +15,21 @@ class CabinetSchema(BaseModel):
     client_id: str
     title: str
     invalid: bool
-    wbtoken: Optional[str] = None
-    wildauthnew_v3: Optional[str] = None
-    x_supplier_id: Optional[str] = None
+    token: Optional[str] = None
+
+    @property
+    def headers(self):
+        return {
+            'Authorization': self.token,
+            **WB_HEADERS
+        }
 
     @classmethod
     def parse_rows(cls, rows: List[Mapping]) -> List['CabinetSchema']:
         results = []
         for row in rows:
-            if user := cls.parse_row(row):
-                results.append(user)
+            if cabinet := cls.parse_row(row):
+                results.append(cabinet)
         return results
 
     @classmethod
@@ -37,14 +47,8 @@ class CabinetSchema(BaseModel):
             title=row.title.decode('utf-8'),
             invalid=row.invalid or False
         )
-        if hasattr(row, 'title') and row.title is not None:
-            result.title = row.title.decode('utf-8')
-        if hasattr(row, 'wbtoken') and row.wbtoken is not None:
-            result.wbtoken = row.wbtoken.decode('utf-8')
-        if hasattr(row, 'wildauthnew_v3') and row.wildauthnew_v3 is not None:
-            result.wildauthnew_v3 = row.wildauthnew_v3.decode('utf-8')
-        if hasattr(row, 'x_supplier_id') and row.x_supplier_id is not None:
-            result.x_supplier_id = row.x_supplier_id.decode('utf-8')
+        if hasattr(row, 'token') and row.token is not None:
+            result.token = row.token.decode('utf-8')
         return result
 
     @classmethod
@@ -52,9 +56,7 @@ class CabinetSchema(BaseModel):
         cls,
         client_id: str,
         title: str,
-        wbtoken: str,
-        wildauthnew_v3: str,
-        x_supplier_id: str
+        token: str,
     ) -> 'CabinetSchema':
         cabinet_id = get_or_generate_id(
             'DECLARE $clientId AS String;'
@@ -68,17 +70,13 @@ class CabinetSchema(BaseModel):
             'DECLARE $cabinetId AS String;'
             'DECLARE $clientId AS String;'
             'DECLARE $title AS String;'
-            'DECLARE $wbToken AS String;'
-            'DECLARE $wildAuthNewV3 AS String;'
-            'DECLARE $xSupplierId AS String;'
-            'UPSERT INTO cabinets (id, client_id, title, invalid, wbtoken, wildauthnew_v3, x_supplier_id) '
-            'VALUES ($cabinetId, $clientId, $title, False, $wbToken, $wildAuthNewV3, $xSupplierId)',
+            'DECLARE $token AS String;'
+            'UPSERT INTO cabinets (id, client_id, title, invalid, token) '
+            'VALUES ($cabinetId, $clientId, $title, False, $token)',
             cabinetId=cabinet_id,
             clientId=client_id,
             title=title,
-            wbToken=wbtoken,
-            wildAuthNewV3=wildauthnew_v3,
-            xSupplierId=x_supplier_id
+            token=token,
         )
         return cls.get_by_id(cabinet_id)
 
@@ -86,8 +84,7 @@ class CabinetSchema(BaseModel):
     def get_by_id(cls, id: str) -> Optional['CabinetSchema']:
         rows = prepare_and_execute_query(
             'DECLARE $cabinetId AS String;'
-            'SELECT id, client_id, title, invalid, wbtoken, wildauthnew_v3, x_supplier_id FROM cabinets '
-            'WHERE id=$cabinetId;',
+            'SELECT id, client_id, title, invalid, token FROM cabinets WHERE id=$cabinetId',
             cabinetId=id
         )
         return cls.parse_row(rows[0]) if rows else None
@@ -96,7 +93,7 @@ class CabinetSchema(BaseModel):
     def get_for_client(cls, client_id: str) -> List['CabinetSchema']:
         rows = prepare_and_execute_query(
             'DECLARE $clientId AS String;'
-            'SELECT id, client_id, title, invalid, wbtoken, wildauthnew_v3, x_supplier_id FROM cabinets '
+            'SELECT id, client_id, title, invalid, token FROM cabinets '
             'WHERE client_id=$clientId',
             clientId=client_id
         )
@@ -111,9 +108,23 @@ class CabinetSchema(BaseModel):
         )
 
     @classmethod
-    def delete_by_id(cls, id: str):
+    def delete_by_id(cls, id: str) -> None:
         prepare_and_execute_query(
             'DECLARE $cabinetId AS String;'
             'DELETE FROM cabinets WHERE id=$cabinetId',
             cabinetId=id
+        )
+
+    def mark_as_invalid(self) -> None:
+        prepare_and_execute_query(
+            'DECLARE $cabinetId AS String;'
+            'UPSERT INTO cabinets (id, invalid) VALUES ($cabinetId, True);',
+            cabinetId=self.id
+        )
+
+    async def mark_as_invalid_async(self) -> None:
+        await prepare_and_execute_query_async(
+            'DECLARE $cabinetId AS String;'
+            'UPSERT INTO cabinets (id, invalid) VALUES ($cabinetId, True);',
+            cabinetId=self.id
         )

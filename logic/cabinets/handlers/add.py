@@ -1,11 +1,16 @@
+import json
+import logging
 from typing import Optional, Union, List, Dict
 
 from commands import finish_command, Commands, update_command_metadata
 from connections import bot
+from connections.ymq import get_cabinets_queue
 from logic.cabinets.internals import get_formatted_list_of_cabinets, check_cabinet_exists
 from logic.cabinets.schemas import CabinetSchema
 from markups.cabinets import get_cabinets_reply_markup
 from markups.common import get_back_button_markup
+
+logger = logging.getLogger(__name__)
 
 
 def handler(
@@ -39,39 +44,24 @@ def handler(
             return
 
         metadata['title'] = text
-        metadata['step'] = 'wbtoken'
+        metadata['step'] = 'token'
+        update_command_metadata(
+            client_id=client_id,
+            telegram_id=message.from_user.id,
+            command=Commands.CABINETS_ADD,
+            metadata=metadata
+        )
         bot.send_message(
             chat_id=message.from_user.id,
-            text='Введите WBToken от вашего аккаунта продавца',
+            text='Введите Стандартный API токен от вашего аккаунта продавца',
             reply_markup=get_back_button_markup()
         )
 
-    elif metadata['step'] == 'wbtoken':
-        metadata['wbtoken'] = text
-        metadata['step'] = 'wildauthnew_v3'
-        bot.send_message(
-            chat_id=message.from_user.id,
-            text='Введите ключ WILDAUTHNEW_V3 от вашего аккаунта продавца',
-            reply_markup=get_back_button_markup()
-        )
-
-    elif metadata['step'] == 'wildauthnew_v3':
-        metadata['wildauthnew_v3'] = text
-        metadata['step'] = 'x_supplier_id'
-        bot.send_message(
-            chat_id=message.from_user.id,
-            text='Введите Supplier ID вашего аккаунта продавца',
-            reply_markup=get_back_button_markup()
-        )
-
-    elif metadata['step'] == 'x_supplier_id':
-        metadata['x_supplier_id'] = text
-        CabinetSchema.create(
+    elif metadata['step'] == 'token':
+        cabinet = CabinetSchema.create(
             client_id=client_id,
             title=metadata['title'],
-            wbtoken=metadata['wbtoken'],
-            wildauthnew_v3=metadata['wildauthnew_v3'],
-            x_supplier_id=metadata['x_supplier_id']
+            token=text
         )
         finish_command(
             client_id=client_id,
@@ -89,11 +79,10 @@ def handler(
             reply_markup=get_cabinets_reply_markup(),
             parse_mode='MarkdownV2'
         )
-        return
-
-    update_command_metadata(
-        client_id=client_id,
-        telegram_id=message.from_user.id,
-        command=Commands.CABINETS_ADD,
-        metadata=metadata
-    )
+        try:
+            cabinets_queue = get_cabinets_queue()
+            cabinets_queue.send_message(
+                MessageBody=json.dumps({'clientId': client_id, 'cabinetId': cabinet.id})
+            )
+        except Exception as e:
+            logger.error(e, exc_info=True)

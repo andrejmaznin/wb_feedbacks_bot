@@ -2,8 +2,9 @@ from typing import Optional, Union, List, Dict
 
 from commands import initiate_command, Commands, finish_command
 from connections import bot
+from logic.feedbacks.internals import get_formatted_list_of_feedbacks
 from markups.common import get_back_button_markup
-from markups.feedbacks import get_feedbacks_reply_markup
+from markups.feedbacks import get_feedbacks_reply_markup, get_default_feedbacks_reply_markup
 from markups.root import get_root_reply_markup
 
 
@@ -55,6 +56,21 @@ def handler(
                 chat_id=message.from_user.id,
                 document=file
             )
+
+    elif command == '📨 Ответы по умолчанию':
+        default_text, feedbacks_metadata = get_formatted_list_of_feedbacks(client_id=client_id)
+        initiate_command(
+            client_id=client_id,
+            telegram_id=message.from_user.id,
+            command=Commands.FEEDBACKS_DEFAULT,
+            metadata=feedbacks_metadata
+        )
+        bot.send_message(
+            chat_id=message.from_user.id,
+            text=default_text,
+            reply_markup=get_default_feedbacks_reply_markup(),
+            parse_mode='MarkdownV2'
+        )
 
     elif command == '◀️ Назад':
         finish_command(

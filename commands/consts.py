@@ -14,6 +14,9 @@ class Commands(str, Enum):
     FEEDBACKS_ADD_TEXT = 'feedbacks_add_text'
     FEEDBACKS_FILE_IMPORT = 'feedbacks_file_import'
     FEEDBACKS_EXCLUDE = 'feedbacks_exclude'
+    FEEDBACKS_DEFAULT = 'feedbacks_default'
+    FEEDBACKS_DEFAULT_ADD = 'feedbacks_default_add'
+    FEEDBACKS_DEFAULT_REMOVE = 'feedbacks_default_remove'
     CABINETS = 'cabinets'
     CABINETS_ADD = 'cabinets_add'
     CABINETS_REMOVE = 'cabinets_remove'
@@ -26,6 +29,9 @@ COMMAND_PARENTS = {
     Commands.FEEDBACKS_ADD_TEXT: Commands.FEEDBACKS,
     Commands.FEEDBACKS_FILE_IMPORT: Commands.FEEDBACKS,
     Commands.FEEDBACKS_EXCLUDE: Commands.FEEDBACKS,
+    Commands.FEEDBACKS_DEFAULT: Commands.FEEDBACKS,
+    Commands.FEEDBACKS_DEFAULT_ADD: Commands.FEEDBACKS_DEFAULT,
+    Commands.FEEDBACKS_DEFAULT_REMOVE: Commands.FEEDBACKS_DEFAULT,
     Commands.CABINETS_ADD: Commands.CABINETS,
     Commands.CABINETS_REMOVE: Commands.CABINETS
 }

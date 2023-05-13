@@ -39,7 +39,7 @@ def handler(
         )
         bot.send_message(
             chat_id=message.from_user.id,
-            text='Введите WBToken от вашего аккаунта продавца',
+            text='Введите Стандартный API токен от вашего аккаунта селлера',
             reply_markup=ReplyKeyboardRemove()
         )
 

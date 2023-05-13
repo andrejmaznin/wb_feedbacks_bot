@@ -2,10 +2,12 @@ import telebot
 
 from commands import initiate_command, Commands
 from connections import bot
+from logic.cabinets.exports import get_formatted_list_of_cabinets
 from logic.onboarding.exports import initiate_onboarding
 from logic.root.internals import start_bot, stop_bot
-from logic.users.utils import is_owner
 from logic.users.exports import get_formatted_list_of_users
+from logic.users.utils import is_owner
+from markups.cabinets import get_cabinets_reply_markup
 from markups.feedbacks import get_feedbacks_reply_markup
 from markups.root import get_root_reply_markup
 from markups.users import get_users_reply_markup
@@ -69,7 +71,12 @@ def handler(message: telebot.types.Message, client_id: str):
             telegram_id=message.from_user.id,
             command=Commands.CABINETS
         )
-        # message with formatted list
+        bot.send_message(
+            chat_id=message.from_user.id,
+            text=get_formatted_list_of_cabinets(client_id),
+            reply_markup=get_cabinets_reply_markup(),
+            parse_mode='MarkdownV2'
+        )
 
     elif command == '⚙️ Настроить заново':
         initiate_onboarding(message, client_id)

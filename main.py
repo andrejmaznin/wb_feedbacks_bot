@@ -12,7 +12,8 @@ from logic.auth.exports import initiate_auth_data_update, check_cookie
 from logic.cabinets import handle_cabinets_command, handle_cabinets_add_command, handle_cabinets_remove_command
 from logic.feedbacks import handle_feedbacks_command, handle_feedbacks_add_barcode_command, \
     handle_feedbacks_add_text_command, handle_feedbacks_file_import_command, \
-    handle_feedbacks_exclude_command
+    handle_feedbacks_exclude_command, handle_feedbacks_default_command, handle_feedbacks_default_add_command, \
+    handle_feedbacks_default_remove_command
 from logic.onboarding import handle_user_onboarding_command
 from logic.purchases import handle_purchase_command, handle_enter_promocode_purchase_command
 from logic.purchases.exports import check_has_purchase
@@ -32,6 +33,9 @@ COMMAND_FUNCTION_MAP = {
     'feedbacks_add_text': handle_feedbacks_add_text_command,
     'feedbacks_file_import': handle_feedbacks_file_import_command,
     'feedbacks_exclude': handle_feedbacks_exclude_command,
+    'feedbacks_default': handle_feedbacks_default_command,
+    'feedbacks_default_add': handle_feedbacks_default_add_command,
+    'feedbacks_default_remove': handle_feedbacks_default_remove_command,
     'user_onboarding': handle_user_onboarding_command,
     'update_auth_data': handle_update_auth_data_command,
     'cabinets': handle_cabinets_command,

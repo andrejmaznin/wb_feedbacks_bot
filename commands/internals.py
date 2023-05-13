@@ -62,6 +62,7 @@ def initiate_command(
         telegramId=str(telegram_id),
         command=command.value
     )
+    print('Initiated command:', command.value, 'client_id:', client_id)
 
     if parent_command := COMMAND_PARENTS.get(command):
         prepare_and_execute_query(
@@ -117,9 +118,9 @@ def update_command_metadata(
 
     prepare_and_execute_query(
         'DECLARE $commandId AS String;'
-        'DECLARE $metadata AS String;'
+        'DECLARE $metadata AS JsonDocument;'
         'UPSERT INTO commands (id, metadata, created_at) '
-        'VALUES ($commandId, CAST(@@$metadata@@ AS JsonDocument), CurrentUtcTimestamp())',
+        'VALUES ($commandId, $metadata, CurrentUtcTimestamp())',
         commandId=command_id,
         metadata=json.dumps(metadata)
     )
@@ -141,6 +142,7 @@ def finish_command(
         telegramId=str(telegram_id),
         command=command.value
     )
+    print('Finished command:', command.value, ', client_id:', client_id)
 
 
 def get_user_command_and_metadata(client_id: str, telegram_id: int) -> Optional[Tuple[Optional[str], Any]]:
@@ -159,6 +161,5 @@ def get_user_command_and_metadata(client_id: str, telegram_id: int) -> Optional[
         metadata = None
         if rows[0].metadata is not None:
             metadata = json.loads(rows[0].metadata)
-
         return command, metadata
     return None, None

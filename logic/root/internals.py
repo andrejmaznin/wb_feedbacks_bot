@@ -1,4 +1,8 @@
+import json
+
+from connections.ymq import get_cabinets_queue
 from libs.ydb import prepare_and_execute_query
+from logic.cabinets.schemas import CabinetSchema
 
 
 def start_bot(client_id: str):
@@ -9,6 +13,12 @@ def start_bot(client_id: str):
         'VALUES ($purchase_id, $clientId, True)',
         clientId=client_id
     )
+    cabinets = CabinetSchema.get_for_client(client_id=client_id)
+    cabinets_queue = get_cabinets_queue()
+    for cabinet in cabinets:
+        cabinets_queue.send_message(
+            MessageBody=json.dumps({'clientId': client_id, 'cabinetId': cabinet.id})
+        )
 
 
 def stop_bot(client_id: str):

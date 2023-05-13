@@ -2,6 +2,8 @@ from typing import Optional, List, Mapping
 
 from pydantic import BaseModel
 
+from libs.ydb import prepare_and_execute_query
+
 
 class UserSchema(BaseModel):
     id: str
@@ -40,3 +42,13 @@ class UserSchema(BaseModel):
         if hasattr(row, 'owner'):
             result.owner = row.owner
         return result
+
+    @classmethod
+    def get_for_client(cls, client_id: str) -> List['UserSchema']:
+        rows = prepare_and_execute_query(
+            'DECLARE $clientId AS String;'
+            'SELECT id, client_id, telegram_id, username, data, pending, owner FROM users '
+            'WHERE client_id=$clientId',
+            clientId=client_id
+        )
+        return cls.parse_rows(rows)

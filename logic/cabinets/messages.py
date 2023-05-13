@@ -3,15 +3,13 @@ from typing import List
 from logic.cabinets.schemas import CabinetSchema
 
 
-def format_list_of_cabinets(
-    cabinets: List[CabinetSchema],
-) -> str:
+def format_list_of_cabinets(cabinets: List[CabinetSchema]) -> str:
     active_list = [cab for cab in cabinets if cab.invalid is False]
     invalid_list = [cab for cab in cabinets if cab.invalid is True]
 
     title = 'Вот список кабинетов селлера в вашем аккаунте'
     active_title = '✅ Активные кабинеты:'
-    invalid_title = '🚫 Неактивные кабинеты (бот не может авторизоваться):'
+    invalid_title = '🚫 Неактивные кабинеты \(бот не может авторизоваться\):'
     active_text = ''
     invalid_text = ''
 

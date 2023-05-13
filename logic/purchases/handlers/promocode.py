@@ -4,7 +4,6 @@ from typing import Optional, Union, List, Dict
 from commands import finish_command, Commands
 from connections import bot
 from libs.ydb import prepare_and_execute_query
-from logic.onboarding.exports import initiate_onboarding
 from markups.common import get_back_button_markup
 from markups.purchases import get_purchase_markup
 from markups.root import get_root_reply_markup
@@ -82,17 +81,9 @@ def handler(
         parse_mode='MarkdownV2',
     )
 
-    rows = prepare_and_execute_query(
-        'DECLARE $clientId AS String;'
-        'SELECT onboarding FROM clients WHERE id=$clientId',
-        clientId=client_id
+    bot.send_message(
+        chat_id=message.from_user.id,
+        text='Бот готов к работе\!\nДобавьте ваш первый кабинет селлера в соответствующем разделе',
+        parse_mode='MarkdownV2',
+        reply_markup=get_root_reply_markup(client_id)
     )
-    if not rows[0].onboarding:
-        initiate_onboarding(message, client_id, required=True)
-    else:
-        bot.send_message(
-            chat_id=message.from_user.id,
-            text='Бот готов к работе\!',
-            parse_mode='MarkdownV2',
-            reply_markup=get_root_reply_markup(client_id)
-        )

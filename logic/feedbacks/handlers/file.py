@@ -1,4 +1,5 @@
 import json
+import logging
 import os
 import pipes
 import uuid
@@ -13,6 +14,8 @@ from connections import bot, get_driver
 from libs.ydb import prepare_and_execute_query
 from markups.common import get_back_button_markup
 from markups.feedbacks import get_feedbacks_reply_markup
+
+logger = logging.getLogger(__name__)
 
 
 class BarcodeFeedbackSchema(BaseModel):
@@ -119,7 +122,8 @@ def handler(
         if message.document.file_name.split('.')[-1] in ('xlsx', 'csv'):
             try:
                 table_collector(message, client_id)
-            except Exception:
+            except Exception as e:
+                logger.error(e, exc_info=True)
                 bot.send_message(
                     chat_id=message.from_user.id,
                     text=f'Видимо, вы прислали файл некорректного формата или с файл с неверными данными\.\n'

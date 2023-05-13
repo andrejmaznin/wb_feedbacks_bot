@@ -2,7 +2,7 @@ import logging
 import uuid
 from typing import Optional, List, Dict
 
-from connections import get_session_pool
+from connections import get_session_pool, get_session_pool_async
 
 logger = logging.getLogger(__name__)
 
@@ -20,7 +20,6 @@ def prepare_and_execute_query(query: str, **kwargs) -> Optional[List]:
     params = fix_query_params(kwargs)
     with pool.checkout() as session:
         prepared_query = session.prepare(query)
-        logger.error(f'Prepared query: {prepared_query.yql_text}')
         result = session.transaction().execute(
             prepared_query,
             params,
@@ -30,7 +29,28 @@ def prepare_and_execute_query(query: str, **kwargs) -> Optional[List]:
     if result:
         if rows := result[0].rows:
             return rows
-    return None
+    return []
+
+
+async def prepare_and_execute_query_async(query: str, **kwargs) -> Optional[List]:
+    pool = await get_session_pool_async()
+    session = await pool.acquire()
+
+    params = fix_query_params(kwargs)
+    prepared_query = await session.prepare(query)
+    # logger.info(f'Prepared query: {prepared_query.yql_text}')
+
+    result = await session.transaction().execute(
+        prepared_query,
+        params,
+        commit_tx=True
+    )
+    await pool.release(session)
+
+    if result:
+        if rows := result[0].rows:
+            return rows
+    return []
 
 
 def get_or_generate_id(query: str, **kwargs) -> str:
