@@ -1,4 +1,4 @@
-from typing import Optional, List, Mapping
+from typing import Optional, List, Mapping, Union
 
 from pydantic import BaseModel
 
@@ -52,3 +52,15 @@ class UserSchema(BaseModel):
             clientId=client_id
         )
         return cls.parse_rows(rows)
+
+    @classmethod
+    def get_by_telegram_id(cls, telegram_id: Union[str, int]) -> Optional['UserSchema']:
+        rows = prepare_and_execute_query(
+            'DECLARE $telegramId AS String;'
+            'SELECT id, client_id, telegram_id, username, data, pending, owner FROM users '
+            'WHERE telegram_id = $telegramId',
+            telegramId=str(telegram_id)
+        )
+        if rows:
+            return cls.parse_row(rows[0])
+        return None

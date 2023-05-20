@@ -7,6 +7,7 @@ from flask import Flask, request
 
 from commands.exports import get_user_command_and_metadata
 from connections import bot
+from connections.ydb import dispose_connections
 from logic.auth import handle_update_auth_data_command
 from logic.auth.exports import initiate_auth_data_update, check_cookie
 from logic.cabinets import handle_cabinets_command, handle_cabinets_add_command, handle_cabinets_remove_command
@@ -15,8 +16,9 @@ from logic.feedbacks import handle_feedbacks_command, handle_feedbacks_add_barco
     handle_feedbacks_exclude_command, handle_feedbacks_default_command, handle_feedbacks_default_add_command, \
     handle_feedbacks_default_remove_command
 from logic.onboarding import handle_user_onboarding_command
-from logic.purchases import handle_purchase_command, handle_enter_promocode_purchase_command
-from logic.purchases.exports import check_has_purchase
+from logic.purchases import handle_purchase_command, handle_enter_promocode_purchase_command, \
+    handle_subscribe_purchase_command
+from logic.purchases.exports import check_has_purchase, handle_successful_payment
 from logic.root import handle_root_command
 from logic.users import handle_users_command, handle_users_add_command, \
     handle_users_remove_command
@@ -44,7 +46,8 @@ COMMAND_FUNCTION_MAP = {
 }
 
 PURCHASE_COMMAND_FUNCTION_MAP = {
-    'enter_promocode': handle_enter_promocode_purchase_command
+    'enter_promocode': handle_enter_promocode_purchase_command,
+    'subscribe': handle_subscribe_purchase_command
 }
 
 
@@ -82,6 +85,22 @@ def hello():
     return json.dumps('Hello!')
 
 
+@app.route('/yookassa', methods=['POST'])
+def handle_successful_payment_webhook():
+    webhook_body = request.json
+    if webhook_body['event'] == 'payment.succeeded':
+        handle_successful_payment(webhook_body['object'].get('metadata', {}).get('paymentId', ''))
+
+    return {
+        'statusCode': 200,
+        'body': json.dumps(
+            {
+                'success': True,
+            }
+        )
+    }
+
+
 @app.route('/', methods=['GET', 'POST'])
 def process_webhook():
     request_body_dict = request.json
@@ -111,9 +130,10 @@ def process_webhook():
                         client_id=client_id,
                         user_id=user.id
                     )
-
+            dispose_connections()
     except Exception as e:
         logger.error(f'Logging error {e}', exc_info=True)
+        # raise e
 
     return {
         'statusCode': 200,

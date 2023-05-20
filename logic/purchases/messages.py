@@ -1,5 +1,4 @@
 from connections import bot
-from .consts import OFFER_MESSAGE_TEXT
 from markups.purchases import get_purchase_markup
 
 
@@ -11,9 +10,7 @@ def send_paywall_message(message):
     )
 
 
-def send_offer_message(message):
-    bot.send_message(
-        chat_id=message.from_user.id,
-        text=OFFER_MESSAGE_TEXT,
-        parse_mode='MarkdownV2'
-    )
+def get_payment_url_message_text(confirmation_url: str) -> str:
+    title_text = 'Вот ваша ссылка на оплату:'
+    bottom_text = 'Как только оплата успешно завершится, вы получите сообщение'
+    return f'{title_text}\n\n{confirmation_url}\n\n{bottom_text}'

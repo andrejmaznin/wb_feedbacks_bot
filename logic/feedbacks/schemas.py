@@ -7,6 +7,7 @@ from typing import Mapping, Optional, List
 from pydantic import BaseModel
 
 from libs.ydb import prepare_and_execute_query
+from libs.ydb.utils import prepare_and_execute_query_async
 
 logger = logging.getLogger(__name__)
 
@@ -14,7 +15,7 @@ logger = logging.getLogger(__name__)
 class ReviewSchema(BaseModel):
     id: str
     stars: int
-    text: str
+    text: Optional[str] = None
     barcode: str
     brand: str
 
@@ -31,7 +32,7 @@ class SettingsSchema(BaseModel):
             hasattr(row, 'id'), hasattr(row, 'client_id'), hasattr(row, 'complain'), hasattr(row, 'reply_neg')
         ]):
             return None
-        if not all([row.id, row.client_id, row.complain, row.reply_neg]):
+        if not all([row.id, row.client_id]):
             return None
 
         result = cls(
@@ -45,6 +46,16 @@ class SettingsSchema(BaseModel):
     @classmethod
     def get_for_client(cls, client_id: str) -> Optional['SettingsSchema']:
         rows = prepare_and_execute_query(
+            'DECLARE $clientId AS String;'
+            'SELECT id, client_id, complain, reply_neg FROM settings '
+            'WHERE client_id=$clientId',
+            clientId=client_id
+        )
+        return cls.parse_row(rows[0]) if rows else None
+
+    @classmethod
+    async def get_for_client_async(cls, client_id: str) -> Optional['SettingsSchema']:
+        rows = await prepare_and_execute_query_async(
             'DECLARE $clientId AS String;'
             'SELECT id, client_id, complain, reply_neg FROM settings '
             'WHERE client_id=$clientId',

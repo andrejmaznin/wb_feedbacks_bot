@@ -61,13 +61,15 @@ def handler(
         'DECLARE $clientId AS String;'
         'DECLARE $userId AS String;'
         'DECLARE $code AS String;'
-        'UPSERT INTO purchases (id, client_id, date, execute) '
-        f'VALUES ($purchaseId, $clientId, CurrentUtcDate(), False);'
+        'DECLARE $settingsId AS String;'
+        'UPSERT INTO purchases (id, client_id, date, execute) VALUES ($purchaseId, $clientId, CurrentUtcDate(), False);'
         f'UPSERT INTO users (id, owner) VALUES ($userId, True);'
+        'UPSERT INTO settings (id, client_id, complain) VALUES ($settingsId, $clientId, False);'
         f'DELETE FROM promocodes WHERE code=$code',
         purchaseId=purchase_id,
         clientId=client_id,
         userId=metadata['user_id'],
+        settingsId=str(uuid.uuid4()),
         code=text
     )
     finish_command(

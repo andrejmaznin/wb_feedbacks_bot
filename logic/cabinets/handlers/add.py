@@ -58,6 +58,13 @@ def handler(
         )
 
     elif metadata['step'] == 'token':
+        if not text.isascii():
+            bot.send_message(
+                chat_id=message.from_user.id,
+                text='Не поняли вас',
+                reply_markup=get_back_button_markup()
+            )
+            return
         cabinet = CabinetSchema.create(
             client_id=client_id,
             title=metadata['title'],

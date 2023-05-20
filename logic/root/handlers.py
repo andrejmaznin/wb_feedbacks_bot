@@ -3,6 +3,7 @@ import telebot
 from commands import initiate_command, Commands
 from connections import bot
 from logic.cabinets.exports import get_formatted_list_of_cabinets
+from logic.feedbacks.internals import set_complaints
 from logic.onboarding.exports import initiate_onboarding
 from logic.root.internals import start_bot, stop_bot
 from logic.users.exports import get_formatted_list_of_users
@@ -21,7 +22,7 @@ def handler(message: telebot.types.Message, client_id: str):
         bot.send_message(
             chat_id=message.from_user.id,
             text='Бот успешно запущен',
-            reply_markup=get_root_reply_markup(client_id)
+            reply_markup=get_root_reply_markup(client_id=client_id)
         )
 
     elif command == '🔴 Остановить бота':
@@ -29,7 +30,23 @@ def handler(message: telebot.types.Message, client_id: str):
         bot.send_message(
             chat_id=message.from_user.id,
             text='Бот успешно остановлен',
-            reply_markup=get_root_reply_markup(client_id)
+            reply_markup=get_root_reply_markup(client_id=client_id)
+        )
+
+    elif command == '🔈 Жаловаться':
+        set_complaints(client_id=client_id, complain=True)
+        bot.send_message(
+            chat_id=message.from_user.id,
+            text='Бот будет жаловаться на негативные (1-3 звезды) отзывы',
+            reply_markup=get_root_reply_markup(client_id=client_id)
+        )
+
+    elif command == '🔇 Не жаловаться':
+        set_complaints(client_id=client_id, complain=False)
+        bot.send_message(
+            chat_id=message.from_user.id,
+            text='Бот не будет жаловаться на негативные (1-3 звезды) отзывы',
+            reply_markup=get_root_reply_markup(client_id=client_id)
         )
 
     elif command == '📩 Ответы':

@@ -42,8 +42,3 @@ def notify_invalid_cabinet(cabinet: CabinetSchema) -> None:
                 text=f'❗️ Пожалуйста\, обновите токен для кабинета `{cabinet.title}`\. Бот не может в нем авторизоваться',
                 parse_mode='MarkdownV2'
             )
-            bot.send_message(
-                chat_id=user.telegram_id,
-                text=get_formatted_list_of_cabinets(client_id=cabinet.client_id),
-                parse_mode='MarkdownV2'
-            )

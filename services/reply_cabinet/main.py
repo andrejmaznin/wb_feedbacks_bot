@@ -4,8 +4,10 @@ from asyncio import gather
 from random import choice
 from typing import Optional, List
 
-from connections import bot
+import aiohttp
+
 from libs.ydb.utils import prepare_and_execute_query_async
+from logic.cabinets.consts import WB_FEEDBACKS_API_URL
 from logic.cabinets.schemas import CabinetSchema
 from logic.feedbacks.schemas import ReviewSchema, SettingsSchema
 
@@ -53,9 +55,10 @@ async def get_negative_feedback_text(client_id: str) -> Optional[str]:
         'WHERE client_id=$clientId AND pos_feedback IS NULL AND barcode IS NULL AND brands IS NULL',
         clientId=client_id
     )
-
-    feedback_text = choice(rows).neg_feedback.decode('utf-8')
-    return feedback_text
+    if rows:
+        feedback_text = choice(rows).neg_feedback.decode('utf-8')
+        return feedback_text
+    return None
 
 
 async def complain_on_review(
@@ -66,7 +69,7 @@ async def complain_on_review(
         'id': review_id,
         'createSupplierComplaint': True
     }
-    '''
+
     async with aiohttp.ClientSession() as web_session:
         async with web_session.patch(
             url=WB_FEEDBACKS_API_URL,
@@ -83,27 +86,22 @@ async def complain_on_review(
         logger.error(
             f'Error while complaining on review: error: {data["errorText"]}, cabinet:{cabinet.id}, body:{body}'
         )
-    else:
-        logger.info(f'Complained on review {review_id}')
-    '''
-    bot.send_message(
-        chat_id=452196443,
-        text=f'Complained on review {review_id}'
-    )
+
+    # await asyncio.to_thread(bot.send_message, chat_id=452196443, text=f'Complained on review {review_id}')
 
 
 async def reply_to_review(
     review_id: str,
     text: str,
     stars: int,
-    cabinet: CabinetSchema
+    barcode: str,
+    cabinet: CabinetSchema,
 ):
     body = {
         'id': review_id,
         'text': text
     }
 
-    '''
     async with aiohttp.ClientSession() as web_session:
         async with web_session.patch(
             url=WB_FEEDBACKS_API_URL,
@@ -121,16 +119,13 @@ async def reply_to_review(
             f'Error while answering review: error: {data["errorText"]}, '
             f'cabinet:{cabinet.id}, body:{body}'
         )
-    else:
-        logger.info(
-            f'Answered review {review_id}, stars: {stars}, answer: {text}'
-        )
     '''
 
     bot.send_message(
         chat_id=452196443,
-        text=f'Answered review {review_id}, stars: {stars}, answer: {text}'
+        text=f'Answered review {review_id}, barcode: {barcode}, stars: {stars}, answer: {text}'
     )
+    '''
 
 
 async def handle_review(
@@ -147,27 +142,32 @@ async def handle_review(
                 review_id=review.id,
                 text=feedback_text,
                 stars=review.stars,
+                barcode=review.barcode,
                 cabinet=cabinet,
             )
 
     else:
-        if settings.reply_neg:
-            feedback_text = await get_negative_feedback_text(client_id=client_id)
+        feedback_text = await get_negative_feedback_text(client_id=client_id)
 
-            if feedback_text is not None:
-                await reply_to_review(
-                    review_id=review.id,
-                    text=feedback_text,
-                    stars=review.stars,
-                    cabinet=cabinet
-                )
+        if feedback_text is not None:
+            await reply_to_review(
+                review_id=review.id,
+                text=feedback_text,
+                stars=review.stars,
+                barcode=review.barcode,
+                cabinet=cabinet
+            )
 
         if settings.complain:
             await complain_on_review(review_id=review.id, cabinet=cabinet)
 
 
-async def reply_for_cabinet(client_id: str, cabinet_id: str, reviews: List[ReviewSchema]) -> None:
-    settings = SettingsSchema.get_for_client(client_id=client_id)
+async def reply_for_cabinet(
+    client_id: str,
+    cabinet_id: str,
+    reviews: List[ReviewSchema],
+    settings: SettingsSchema
+) -> None:
     cabinet = CabinetSchema.get_by_id(id=cabinet_id)
 
     tasks = [
@@ -189,11 +189,11 @@ async def handler(event, context):
 
         client_id = task_body['clientId']
         cabinet_id = task_body['cabinetId']
+        settings = await SettingsSchema.get_for_client_async(client_id=client_id)
         reviews = [
             ReviewSchema(
                 id=review['id'],
                 stars=review['stars'],
-                text=review['text'],
                 barcode=review['barcode'],
                 brand=review['brand']
             ) for review in task_body['reviews']
@@ -202,5 +202,6 @@ async def handler(event, context):
         await reply_for_cabinet(
             client_id=client_id,
             cabinet_id=cabinet_id,
-            reviews=reviews
+            reviews=reviews,
+            settings=settings
         )

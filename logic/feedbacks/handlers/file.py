@@ -79,11 +79,10 @@ def import_feedbacks_by_brands(file, client_id):
         prepare_and_execute_query(
             'DECLARE $clientId AS String;'
             'DECLARE $feedbackId AS String;'
-            'DECLARE $brands AS String;'
+            'DECLARE $brands AS JsonDocument;'
             'DECLARE $posFeedback AS String;'
             'UPSERT INTO feedbacks (id, brands, client_id, pos_feedback, created_at) '
-            'VALUES ($feedbackId, CAST(@@$brands@@ as JsonDocument), '
-            '$clientId, $posFeedback, CurrentUtcTimestamp())',
+            'VALUES ($feedbackId, $brands, $clientId, $posFeedback, CurrentUtcTimestamp())',
             clientId=client_id,
             feedbackId=str(uuid.uuid4()),
             brands=json.dumps(list(map(str.strip, items[1][i].split(",")))),

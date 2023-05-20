@@ -9,6 +9,7 @@ class Commands(str, Enum):
     USERS_REMOVE = 'users_remove'
     UPDATE_AUTH_DATA = 'update_auth_data'
     ENTER_PROMOCODE = 'enter_promocode'
+    SUBSCRIBE = 'subscribe'
     FEEDBACKS = 'feedbacks'
     FEEDBACKS_ADD_BARCODE = 'feedbacks_add_barcode'
     FEEDBACKS_ADD_TEXT = 'feedbacks_add_text'

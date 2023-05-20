@@ -2,6 +2,8 @@ import logging
 import uuid
 from typing import Optional, List, Dict
 
+from ydb import BaseRequestSettings, RetrySettings, BackoffSettings
+
 from connections import get_session_pool, get_session_pool_async
 
 logger = logging.getLogger(__name__)
@@ -16,16 +18,24 @@ def fix_query_params(params: Dict) -> Dict:
 
 def prepare_and_execute_query(query: str, **kwargs) -> Optional[List]:
     pool = get_session_pool()
-
     params = fix_query_params(kwargs)
-    with pool.checkout() as session:
+
+    def callee(session):
         prepared_query = session.prepare(query)
-        result = session.transaction().execute(
+        query_result = session.transaction().execute(
             prepared_query,
             params,
-            commit_tx=True
+            commit_tx=True,
+            settings=BaseRequestSettings().with_timeout(0.5).with_operation_timeout(0.4).with_cancel_after(0.4)
         )
+        return query_result
 
+    result = pool.retry_operation_sync(
+        callee=callee,
+        retry_settings=RetrySettings().with_fast_backoff(
+            backoff_settings=BackoffSettings()
+        )
+    )
     if result:
         if rows := result[0].rows:
             return rows
@@ -34,18 +44,27 @@ def prepare_and_execute_query(query: str, **kwargs) -> Optional[List]:
 
 async def prepare_and_execute_query_async(query: str, **kwargs) -> Optional[List]:
     pool = await get_session_pool_async()
-    session = await pool.acquire()
 
     params = fix_query_params(kwargs)
-    prepared_query = await session.prepare(query)
+
     # logger.info(f'Prepared query: {prepared_query.yql_text}')
 
-    result = await session.transaction().execute(
-        prepared_query,
-        params,
-        commit_tx=True
+    async def callee(session):
+        prepared_query = await session.prepare(query)
+        query_result = await session.transaction().execute(
+            prepared_query,
+            params,
+            commit_tx=True,
+            settings=BaseRequestSettings().with_timeout(0.5).with_operation_timeout(0.4).with_cancel_after(0.4)
+        )
+        return query_result
+
+    result = await pool.retry_operation(
+        callee=callee,
+        retry_settings=RetrySettings().with_fast_backoff(
+            backoff_settings=BackoffSettings()
+        )
     )
-    await pool.release(session)
 
     if result:
         if rows := result[0].rows:

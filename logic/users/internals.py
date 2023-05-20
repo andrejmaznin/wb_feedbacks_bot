@@ -2,7 +2,7 @@ import uuid
 from typing import Optional
 
 from connections import get_session_pool, bot
-from libs.ydb import get_or_generate_id
+from libs.ydb import get_or_generate_id, prepare_and_execute_query
 from logic.users.messages import format_list_of_users
 from logic.users.schemas import UserSchema
 from markups.root import get_root_reply_markup
@@ -91,43 +91,48 @@ def get_user(
 
     with pool.checkout() as session:
         if username is not None:
-            result = session.transaction().execute(
-                f'SELECT * FROM users '
-                f'WHERE telegram_id="{telegram_id}" AND username="{username}" AND pending=False',
-                commit_tx=True
+            rows = prepare_and_execute_query(
+                'DECLARE $telegramId AS String;'
+                'DECLARE $username AS String;'
+                'SELECT * FROM users WHERE telegram_id=$telegramId AND username=$username AND pending=False',
+                telegramId=str(telegram_id),
+                username=username
             )
         else:
-            result = session.transaction().execute(
-                f'SELECT * FROM users '
-                f'WHERE telegram_id="{telegram_id}" AND pending=False',
-                commit_tx=True
+            rows = prepare_and_execute_query(
+                'DECLARE $telegramId AS String;'
+                'SELECT * FROM users WHERE telegram_id=$telegramId AND pending=False',
+                telegramId=str(telegram_id),
             )
 
-        if not result[0].rows:
+        if not rows:
             if username is not None:
-                result = session.transaction().execute(
-                    f'SELECT * FROM users '
-                    f'WHERE (data="{telegram_id}" or data="{username}") AND pending=True',
-                    commit_tx=True
+                rows = prepare_and_execute_query(
+                    'DECLARE $telegramId AS String;'
+                    'DECLARE $username AS String;'
+                    'SELECT * FROM users WHERE (data=$telegramId or data=$username) AND pending=True',
+                    telegramId=str(telegram_id),
+                    username=username
                 )
             else:
-                result = session.transaction().execute(
-                    f'SELECT * FROM users '
-                    f'WHERE data="{telegram_id}" AND pending=True',
-                    commit_tx=True
+                rows = prepare_and_execute_query(
+                    'DECLARE $telegramId AS String;'
+                    'DECLARE $username AS String;'
+                    'SELECT * FROM users WHERE data=$telegramId AND pending=True',
+                    telegramId=str(telegram_id),
                 )
 
-        if not result[0].rows:
+        if not rows:
             return None
 
     return UserSchema(
-        id=result[0].rows[0].id.decode('utf-8'),
-        client_id=result[0].rows[0].client_id.decode('utf-8'),
+        id=rows[0].id.decode('utf-8'),
+        client_id=rows[0].client_id.decode('utf-8'),
         username=username,
         telegram_id=telegram_id,
-        data=result[0].rows[0].data.decode('utf-8') if result[0].rows[0].data is not None else None,
-        owner=result[0].rows[0].owner,
-        pending=result[0].rows[0].pending
+        data=rows[0].data.decode('utf-8') if rows[0].data is not None else None,
+        owner=rows[0].owner,
+        pending=rows[0].pending
     )
 
 

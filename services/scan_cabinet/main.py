@@ -1,5 +1,6 @@
 import json
 import logging
+import os
 from typing import Optional
 
 import requests
@@ -42,10 +43,9 @@ def scan_cabinet(cabinet: CabinetSchema) -> Optional[dict]:
         {
             'id': review['id'],
             'stars': review['productValuation'],
-            'text': review['text'],
             'barcode': str(review['productDetails']['nmId']),
             'brand': review['productDetails']['brandName']
-        } for review in reviews
+        } for review in reviews if review['isCreationSupplierComplaint'] is not False
     ]
 
     return {
@@ -73,5 +73,5 @@ def handler(event, context):
             reviews_queue.send_message(MessageBody=json.dumps(task))
             cabinets_queue.send_message(
                 MessageBody=json.dumps({'clientId': client_id, 'cabinetId': cabinet_id}),
-                DelaySeconds=300
+                DelaySeconds=int(os.getenv('SCAN_CABINET_DELAY', 300))
             )

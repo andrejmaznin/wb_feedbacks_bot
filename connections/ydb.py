@@ -20,6 +20,7 @@ def get_driver():
         endpoint=os.getenv('YDB_ENDPOINT'),
         database=os.getenv('YDB_DATABASE')
     )
+    driver.wait(fail_fast=True, timeout=5)
     return driver
 
 
@@ -32,7 +33,7 @@ async def get_driver_async():
         endpoint=os.getenv('YDB_ENDPOINT'),
         database=os.getenv('YDB_DATABASE')
     )
-    # await driver_async.wait(fail_fast=True, timeout=5)
+    await driver_async.wait(fail_fast=True, timeout=5)
 
     return driver_async
 
@@ -44,9 +45,15 @@ def get_session_pool():
         return session_pool
 
     ydb_driver = get_driver()
-    ydb_driver.wait(fail_fast=True, timeout=1)
-    session_pool = ydb.SessionPool(ydb_driver, 10)
+    session_pool = ydb.SessionPool(ydb_driver, 50)
     return session_pool
+
+
+def dispose_connections():
+    global session_pool
+    global driver
+    session_pool = None
+    driver = None
 
 
 async def get_session_pool_async():
@@ -56,5 +63,5 @@ async def get_session_pool_async():
         return session_pool_async
 
     ydb_driver_async = await get_driver_async()
-    session_pool_async = ydb.aio.SessionPool(ydb_driver_async, 10)
+    session_pool_async = ydb.aio.SessionPool(ydb_driver_async, 100)
     return session_pool_async

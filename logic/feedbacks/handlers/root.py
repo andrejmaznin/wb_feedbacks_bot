@@ -2,7 +2,7 @@ from typing import Optional, Union, List, Dict
 
 from commands import initiate_command, Commands, finish_command
 from connections import bot
-from logic.feedbacks.internals import get_formatted_list_of_feedbacks
+from logic.feedbacks.internals import get_formatted_list_of_feedbacks, set_complaints
 from markups.common import get_back_button_markup
 from markups.feedbacks import get_feedbacks_reply_markup, get_default_feedbacks_reply_markup
 from markups.root import get_root_reply_markup
