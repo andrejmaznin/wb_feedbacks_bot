@@ -56,6 +56,13 @@ def dispose_connections():
     driver = None
 
 
+def dispose_connections_async():
+    global session_pool_async
+    global driver_async
+    session_pool_async = None
+    driver_async = None
+
+
 async def get_session_pool_async():
     global session_pool_async
 

@@ -6,6 +6,8 @@ from typing import Optional
 import requests
 
 from connections import get_reviews_queue
+from connections.redis import get_redis_client
+from connections.ydb import dispose_connections
 from connections.ymq import get_cabinets_queue
 from logic.cabinets.consts import WB_FEEDBACKS_API_URL
 from logic.cabinets.internals import notify_invalid_cabinet
@@ -16,7 +18,9 @@ logger = logging.getLogger()
 logger.setLevel(logging.INFO)
 
 
-def scan_cabinet(cabinet: CabinetSchema) -> Optional[dict]:
+def scan_cabinet(cabinet: CabinetSchema, client_id: str) -> Optional[dict]:
+    redis_client = get_redis_client()
+
     response = requests.get(
         url=WB_FEEDBACKS_API_URL,
         headers=cabinet.headers,
@@ -25,7 +29,7 @@ def scan_cabinet(cabinet: CabinetSchema) -> Optional[dict]:
             'skip': 0,
             'hasSupplierComplaint': False,
             'isAnswered': False,
-            'order': 'dateDesc',
+            'order': 'dateDesc'
         }
     )
 
@@ -39,14 +43,30 @@ def scan_cabinet(cabinet: CabinetSchema) -> Optional[dict]:
             return
 
     reviews = data['data']['feedbacks']
-    messages = [
+    redis_keys = redis_client.mget(
+        keys=[
+            f'no-feedback:{client_id}:{review["productDetails"]["nmId"]}'
+            for review in reviews
+        ]
+    )
+    reviews_needed_info = [
         {
             'id': review['id'],
             'stars': review['productValuation'],
             'barcode': str(review['productDetails']['nmId']),
-            'brand': review['productDetails']['brandName']
-        } for review in reviews if review['isCreationSupplierComplaint'] is not False
+            'brand': review['productDetails']['brandName'],
+            'isCreationSupplierComplaint': review['isCreationSupplierComplaint']
+        } for review in reviews
     ]
+
+    messages = []
+    for rkey, review in zip(redis_keys, reviews_needed_info):
+        if rkey is None:
+            if 1 <= review['stars'] <= 3:
+                if review['isCreationSupplierComplaint']:
+                    messages.append(review)
+            else:
+                messages.append(review)
 
     return {
         'clientId': cabinet.client_id,
@@ -69,9 +89,10 @@ def handler(event, context):
         if not check_should_execute(client_id=client_id) or cabinet.invalid:
             return
 
-        if task := scan_cabinet(cabinet=cabinet):
+        if task := scan_cabinet(cabinet=cabinet, client_id=client_id):
             reviews_queue.send_message(MessageBody=json.dumps(task))
             cabinets_queue.send_message(
                 MessageBody=json.dumps({'clientId': client_id, 'cabinetId': cabinet_id}),
                 DelaySeconds=int(os.getenv('SCAN_CABINET_DELAY', 300))
             )
+    dispose_connections()

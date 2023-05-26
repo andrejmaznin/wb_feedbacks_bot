@@ -23,6 +23,7 @@ from logic.root import handle_root_command
 from logic.users import handle_users_command, handle_users_add_command, \
     handle_users_remove_command
 from logic.users.exports import authorize_user, create_client_and_user
+from services.refresh_ms_token.main import blueprint as microsoft_blueprint
 
 logger = logging.getLogger()
 
@@ -78,6 +79,7 @@ def dispatch_purchase_command(message, client_id: str, user_id: str):
 
 
 app = Flask(__name__)
+app.register_blueprint(blueprint=microsoft_blueprint, url_prefix='/microsoft')
 
 
 @app.route('/hello')

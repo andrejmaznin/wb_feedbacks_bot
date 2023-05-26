@@ -5,7 +5,10 @@ from random import choice
 from typing import Optional, List
 
 import aiohttp
+from redis.asyncio.client import Pipeline
 
+from connections.redis import get_redis_client_async
+from connections.ydb import dispose_connections_async
 from libs.ydb.utils import prepare_and_execute_query_async
 from logic.cabinets.consts import WB_FEEDBACKS_API_URL
 from logic.cabinets.schemas import CabinetSchema
@@ -90,29 +93,55 @@ async def complain_on_review(
     # await asyncio.to_thread(bot.send_message, chat_id=452196443, text=f'Complained on review {review_id}')
 
 
+async def view_review(
+    review_id: str,
+    cabinet: CabinetSchema,
+    web_session: aiohttp.ClientSession
+) -> None:
+    body = {
+        'id': review_id,
+        'wasViewed': True
+    }
+    async with web_session.patch(
+        url=WB_FEEDBACKS_API_URL,
+        headers=cabinet.headers,
+        json=body,
+    ) as response:
+        if response.status in (401, 403):
+            await cabinet.mark_as_invalid_async()
+            return
+
+        data = await response.json()
+
+    if data['error'] is True:
+        logger.error(
+            f'Error while viewing review: error: {data["errorText"]}, cabinet:{cabinet.id}, body:{body}'
+        )
+
+
 async def reply_to_review(
     review_id: str,
     text: str,
     stars: int,
     barcode: str,
     cabinet: CabinetSchema,
+    web_session: aiohttp.ClientSession,
 ):
     body = {
         'id': review_id,
         'text': text
     }
 
-    async with aiohttp.ClientSession() as web_session:
-        async with web_session.patch(
-            url=WB_FEEDBACKS_API_URL,
-            headers=cabinet.headers,
-            json=body
-        ) as response:
-            if response.status in (401, 403):
-                await cabinet.mark_as_invalid_async()
-                return
+    async with web_session.patch(
+        url=WB_FEEDBACKS_API_URL,
+        headers=cabinet.headers,
+        json=body
+    ) as response:
+        if response.status in (401, 403):
+            await cabinet.mark_as_invalid_async()
+            return
 
-            data = await response.json()
+        data = await response.json()
 
     if data['error'] is True:
         logger.error(
@@ -132,8 +161,12 @@ async def handle_review(
     client_id: str,
     review: ReviewSchema,
     cabinet: CabinetSchema,
-    settings: SettingsSchema
+    settings: SettingsSchema,
+    web_session: aiohttp.ClientSession,
+    redis_pipe: Pipeline
 ) -> None:
+    #  await view_review(review_id=review.id, cabinet=cabinet, web_session=web_session)
+
     if review.stars in [0, 4, 5]:
         feedback_text = await get_positive_feedback_text(client_id=client_id, review=review)
 
@@ -144,7 +177,10 @@ async def handle_review(
                 stars=review.stars,
                 barcode=review.barcode,
                 cabinet=cabinet,
+                web_session=web_session
             )
+        else:
+            await redis_pipe.set(f'no-feedback:{client_id}:{review.barcode}', 'True', ex=12 * 60 * 60)
 
     else:
         feedback_text = await get_negative_feedback_text(client_id=client_id)
@@ -155,7 +191,8 @@ async def handle_review(
                 text=feedback_text,
                 stars=review.stars,
                 barcode=review.barcode,
-                cabinet=cabinet
+                cabinet=cabinet,
+                web_session=web_session
             )
 
         if settings.complain:
@@ -170,16 +207,23 @@ async def reply_for_cabinet(
 ) -> None:
     cabinet = CabinetSchema.get_by_id(id=cabinet_id)
 
-    tasks = [
-        handle_review(
-            client_id=client_id,
-            review=review,
-            cabinet=cabinet,
-            settings=settings
-        ) for review in reviews
-    ]
+    redis_client = get_redis_client_async()
+    redis_pipe = redis_client.pipeline()
 
-    await gather(*tasks)
+    async with aiohttp.ClientSession(raise_for_status=True) as web_session:
+        tasks = [
+            handle_review(
+                client_id=client_id,
+                review=review,
+                cabinet=cabinet,
+                settings=settings,
+                web_session=web_session,
+                redis_pipe=redis_pipe
+            ) for review in reviews
+        ]
+
+        await gather(*tasks, return_exceptions=True)
+        await redis_pipe.execute()
 
 
 async def handler(event, context):
@@ -205,3 +249,4 @@ async def handler(event, context):
             reviews=reviews,
             settings=settings
         )
+        dispose_connections_async()

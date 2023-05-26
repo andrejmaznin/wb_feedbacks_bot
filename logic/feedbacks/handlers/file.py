@@ -67,7 +67,7 @@ def import_feedbacks_by_brands(file, client_id):
     excel.columns = 0, 1
 
     items = excel.to_dict('list')
-
+    print(items)
     if len(items[0]) == 0:
         return None
 
