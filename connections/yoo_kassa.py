@@ -1,8 +1,8 @@
-import os
-
 from yookassa import Configuration
+
+from settings import yookassa_settings
 
 
 def config_yookassa():
-    Configuration.account_id = os.getenv('YOOKASSA_ACCOUNT_ID')
-    Configuration.secret_key = os.getenv('YOOKASSA_SECRET_KEY')
+    Configuration.account_id = yookassa_settings.account_id
+    Configuration.secret_key = yookassa_settings.secret_key

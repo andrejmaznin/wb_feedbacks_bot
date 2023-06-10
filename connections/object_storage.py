@@ -1,15 +1,10 @@
 import logging
-import os
-
-import yadisk
 
 from connections.boto3 import get_boto_session
 
-logger = logging.getLogger()
+logger = logging.getLogger(__name__)
 
 storage_client = None
-
-disk_client = yadisk.YaDisk(token=os.getenv('YADISK_TOKEN'))
 
 
 def get_storage_client():

@@ -1,83 +1,51 @@
 import json
+import logging
 
-import requests
 from flask import request, Blueprint
 
+from libs.microsoft import get_ms_auth_client
 from libs.ydb.utils import prepare_and_execute_query
-from services.refresh_ms_token.settings import settings as microsoft_settings
+
+logger = logging.getLogger(__name__)
 
 blueprint = Blueprint('microsoft', __name__)
 
 
-def get_token(code: str) -> None:
-    form_data = {
-        'code': code,
-        'client_id': microsoft_settings.client_id,
-        'client_secret': microsoft_settings.client_secret,
-        'scope': 'offline_access files.readwrite.all',
-        'grant_type': 'authorization_code'
-    }
-    params = {'redirect_url': microsoft_settings.redirect_url}
+def get_token(auth_code: str) -> None:
+    ms_auth_client = get_ms_auth_client()
 
-    response = requests.post(
-        url='https://login.microsoftonline.com/consumers/oauth2/v2.0/token',
-        data=form_data,
-        params=params
-    )
-    if response.status_code != 200:
-        return
-
-    data = response.json()
-    access_token = data['access_token']
-    refresh_token = data['refresh_token']
-
+    access_token, refresh_token = ms_auth_client.get_tokens(auth_code=auth_code)
     prepare_and_execute_query(
         'DECLARE $credentialId AS String;'
         'DECLARE $accessToken AS String;'
         'DECLARE $refreshToken AS String;'
-        'UPSERT INTO admin_credentials (id, ms_access_token, ms_refresh_token) '
-        'VALUES ($credentialId, $accessToken, $refreshToken)',
+        'UPSERT INTO admin_credentials (id, ms_access_token, ms_refresh_token, created_at) '
+        'VALUES ($credentialId, $accessToken, $refreshToken, CurrentUTCTimestamp())',
         credentialId='andrew',
         accessToken=access_token,
         refreshToken=refresh_token
     )
 
 
-def refresh_ms_token():
+def refresh_ms_token() -> None:
+    ms_auth_client = get_ms_auth_client()
+
     rows = prepare_and_execute_query(
         'DECLARE $credentialId AS String;'
-        'SELECT refresh_token FROM admin_credentials WHERE id=$credentialId',
+        'SELECT ms_refresh_token FROM admin_credentials WHERE id=$credentialId',
         credentialId='andrew'
     )
     if not rows:
         return
 
-    refresh_token = rows[0]['refresh_token'].decode('utf-8')
-
-    form_data = {
-        'refresh_token': refresh_token,
-        'client_id': microsoft_settings.client_id,
-        'client_secret': microsoft_settings.client_secret,
-        'scope': 'offline_access files.readwrite.all',
-        'grant_type': 'refresh_token'
-    }
-    response = requests.post(
-        url='https://login.microsoftonline.com/consumers/oauth2/v2.0/authorize',
-        data=form_data
-    )
-    if response.status_code != 200:
-        return
-
-    data = response.json()
-    new_access_token = data['access_token']
-    new_refresh_token = data['refresh_token']
-
+    refresh_token = rows[0]['ms_refresh_token'].decode('utf-8')
+    new_access_token, new_refresh_token = ms_auth_client.refresh_tokens(refresh_token=refresh_token)
     prepare_and_execute_query(
         'DECLARE $credentialId AS String;'
         'DECLARE $accessToken AS String;'
         'DECLARE $refreshToken AS String;'
-        'UPSERT INTO admin_credentials (id, ms_access_token, ms_refresh_token) '
-        'VALUES ($credentialId, $accessToken, $refreshToken)',
+        'UPSERT INTO admin_credentials (id, ms_access_token, ms_refresh_token, created_at) '
+        'VALUES ($credentialId, $accessToken, $refreshToken, CurrentUTCTimestamp())',
         credentialId='andrew',
         accessToken=new_access_token,
         refreshToken=new_refresh_token
@@ -89,7 +57,7 @@ def handle_auth_code():
     code = request.args.get('code')
     if code is None:
         return
-    get_token(code=code)
+    get_token(auth_code=code)
 
     return {
         'statusCode': 200,
@@ -100,7 +68,6 @@ def handle_auth_code():
 @blueprint.route('/', methods=['GET', 'POST'])
 def handle_refresh_request():
     refresh_ms_token()
-
     return {
         'statusCode': 200,
         'body': json.dumps({'success': True})

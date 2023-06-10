@@ -1,6 +1,5 @@
 import json
 import logging
-import os
 from typing import Optional
 
 import requests
@@ -9,10 +8,11 @@ from connections import get_reviews_queue
 from connections.redis import get_redis_client
 from connections.ydb import dispose_connections
 from connections.ymq import get_cabinets_queue
-from logic.cabinets.consts import WB_FEEDBACKS_API_URL
-from logic.cabinets.internals import notify_invalid_cabinet
-from logic.cabinets.schemas import CabinetSchema
-from logic.purchases.exports import check_should_execute
+from modules.wb_bot.cabinets import WB_FEEDBACKS_API_URL
+from modules.wb_bot.cabinets import notify_invalid_cabinet
+from modules.wb_bot.cabinets import CabinetSchema
+from modules.wb_bot.purchases import check_should_execute
+from settings import logic_settings
 
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
@@ -93,6 +93,6 @@ def handler(event, context):
             reviews_queue.send_message(MessageBody=json.dumps(task))
             cabinets_queue.send_message(
                 MessageBody=json.dumps({'clientId': client_id, 'cabinetId': cabinet_id}),
-                DelaySeconds=int(os.getenv('SCAN_CABINET_DELAY', 300))
+                DelaySeconds=logic_settings.scan_cabinet_delay
             )
     dispose_connections()

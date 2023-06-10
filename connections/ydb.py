@@ -3,7 +3,7 @@ import os
 
 import ydb
 
-logger = logging.getLogger()
+logger = logging.getLogger(__name__)
 
 session_pool = None
 session_pool_async = None

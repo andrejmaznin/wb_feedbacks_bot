@@ -9,46 +9,36 @@ from redis.asyncio.client import Pipeline
 
 from connections.redis import get_redis_client_async
 from connections.ydb import dispose_connections_async
+from libs.wildberries.schemas import ReviewSchema
 from libs.ydb.utils import prepare_and_execute_query_async
-from logic.cabinets.consts import WB_FEEDBACKS_API_URL
-from logic.cabinets.schemas import CabinetSchema
-from logic.feedbacks.schemas import ReviewSchema, SettingsSchema
+from modules.wb_bot.cabinets import CabinetSchema
+from modules.wb_bot.cabinets import WB_FEEDBACKS_API_URL
+from modules.wb_bot.feedbacks.schemas import SettingsSchema
 
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
 
 
-async def get_positive_feedback_text(client_id: str, review: ReviewSchema) -> Optional[str]:
+async def get_positive_feedback_text(cabinet_id: str, review: ReviewSchema) -> Optional[str]:
     rows = await prepare_and_execute_query_async(
-        'DECLARE $clientId AS String;'
+        'DECLARE $cabinetId AS String;'
         'DECLARE $barcode AS String;'
         'SELECT pos_feedback FROM barcode_feedbacks '
-        'WHERE client_id=$clientId AND barcode=$barcode;',
-        clientId=client_id,
+        'WHERE cabinet_id=$cabinetId AND barcode=$barcode;',
+        cabinetId=cabinet_id,
         barcode=review.barcode
     )
+    if rows:
+        return rows[0].pos_feedback.decode('utf-8')
 
-    if not rows:
-        rows = await prepare_and_execute_query_async(
-            'DECLARE $clientId AS String;'
-            'DECLARE $brand AS String;'
-            'SELECT pos_feedback, created_at FROM feedbacks WHERE client_id=$clientId AND '
-            'JSON_EXISTS(brands, \'$ ? (@ == $brand)\') '
-            'ORDER BY created_at DESC LIMIT 1',
-            clientId=client_id,
-            brand=review.brand
-        )
-
-    if not rows:
-        rows = await prepare_and_execute_query_async(
-            'DECLARE $clientId AS String;'
-            'SELECT pos_feedback FROM feedbacks '
-            'WHERE client_id=$clientId AND neg_feedback IS NULL AND barcode IS NULL AND brands IS NULL',
-            clientId=client_id
-        )
-
-    feedback_text = choice(rows).pos_feedback.decode('utf-8') if rows else None
-    return feedback_text
+    rows = await prepare_and_execute_query_async(
+        'DECLARE $cabinetId AS String;'
+        'DECLARE $brand AS String;'
+        'SELECT pos_feedbacks FROM brand_feedbacks WHERE brand=$brand AND cabinet_id=$cabinetId',
+        cabinetId=cabinet_id,
+        brand=review.brand
+    )
+    return choice(json.loads(rows[0].pos_feedbacks))
 
 
 async def get_negative_feedback_text(client_id: str) -> Optional[str]:
@@ -65,8 +55,8 @@ async def get_negative_feedback_text(client_id: str) -> Optional[str]:
 
 
 async def complain_on_review(
-    review_id: str,
-    cabinet: CabinetSchema
+        review_id: str,
+        cabinet: CabinetSchema
 ) -> None:
     body = {
         'id': review_id,
@@ -75,9 +65,9 @@ async def complain_on_review(
 
     async with aiohttp.ClientSession() as web_session:
         async with web_session.patch(
-            url=WB_FEEDBACKS_API_URL,
-            headers=cabinet.headers,
-            json=body
+                url=WB_FEEDBACKS_API_URL,
+                headers=cabinet.headers,
+                json=body
         ) as response:
             if response.status in (401, 403):
                 await cabinet.mark_as_invalid_async()
@@ -93,39 +83,11 @@ async def complain_on_review(
     # await asyncio.to_thread(bot.send_message, chat_id=452196443, text=f'Complained on review {review_id}')
 
 
-async def view_review(
-    review_id: str,
-    cabinet: CabinetSchema,
-    web_session: aiohttp.ClientSession
-) -> None:
-    body = {
-        'id': review_id,
-        'wasViewed': True
-    }
-    async with web_session.patch(
-        url=WB_FEEDBACKS_API_URL,
-        headers=cabinet.headers,
-        json=body,
-    ) as response:
-        if response.status in (401, 403):
-            await cabinet.mark_as_invalid_async()
-            return
-
-        data = await response.json()
-
-    if data['error'] is True:
-        logger.error(
-            f'Error while viewing review: error: {data["errorText"]}, cabinet:{cabinet.id}, body:{body}'
-        )
-
-
 async def reply_to_review(
-    review_id: str,
-    text: str,
-    stars: int,
-    barcode: str,
-    cabinet: CabinetSchema,
-    web_session: aiohttp.ClientSession,
+        review_id: str,
+        text: str,
+        cabinet: CabinetSchema,
+        web_session: aiohttp.ClientSession,
 ):
     body = {
         'id': review_id,
@@ -133,9 +95,9 @@ async def reply_to_review(
     }
 
     async with web_session.patch(
-        url=WB_FEEDBACKS_API_URL,
-        headers=cabinet.headers,
-        json=body
+            url=WB_FEEDBACKS_API_URL,
+            headers=cabinet.headers,
+            json=body
     ) as response:
         if response.status in (401, 403):
             await cabinet.mark_as_invalid_async()
@@ -148,8 +110,8 @@ async def reply_to_review(
             f'Error while answering review: error: {data["errorText"]}, '
             f'cabinet:{cabinet.id}, body:{body}'
         )
-    '''
 
+    '''
     bot.send_message(
         chat_id=452196443,
         text=f'Answered review {review_id}, barcode: {barcode}, stars: {stars}, answer: {text}'
@@ -158,24 +120,20 @@ async def reply_to_review(
 
 
 async def handle_review(
-    client_id: str,
-    review: ReviewSchema,
-    cabinet: CabinetSchema,
-    settings: SettingsSchema,
-    web_session: aiohttp.ClientSession,
-    redis_pipe: Pipeline
+        client_id: str,
+        review: ReviewSchema,
+        cabinet: CabinetSchema,
+        settings: SettingsSchema,
+        web_session: aiohttp.ClientSession,
+        redis_pipe: Pipeline
 ) -> None:
-    #  await view_review(review_id=review.id, cabinet=cabinet, web_session=web_session)
-
     if review.stars in [0, 4, 5]:
-        feedback_text = await get_positive_feedback_text(client_id=client_id, review=review)
+        feedback_text = await get_positive_feedback_text(cabinet_id=cabinet.id, review=review)
 
         if feedback_text is not None:
             await reply_to_review(
                 review_id=review.id,
                 text=feedback_text,
-                stars=review.stars,
-                barcode=review.barcode,
                 cabinet=cabinet,
                 web_session=web_session
             )
@@ -183,27 +141,15 @@ async def handle_review(
             await redis_pipe.set(f'no-feedback:{client_id}:{review.barcode}', 'True', ex=12 * 60 * 60)
 
     else:
-        feedback_text = await get_negative_feedback_text(client_id=client_id)
-
-        if feedback_text is not None:
-            await reply_to_review(
-                review_id=review.id,
-                text=feedback_text,
-                stars=review.stars,
-                barcode=review.barcode,
-                cabinet=cabinet,
-                web_session=web_session
-            )
-
         if settings.complain:
             await complain_on_review(review_id=review.id, cabinet=cabinet)
 
 
 async def reply_for_cabinet(
-    client_id: str,
-    cabinet_id: str,
-    reviews: List[ReviewSchema],
-    settings: SettingsSchema
+        client_id: str,
+        cabinet_id: str,
+        reviews: List[ReviewSchema],
+        settings: SettingsSchema
 ) -> None:
     cabinet = CabinetSchema.get_by_id(id=cabinet_id)
 

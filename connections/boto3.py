@@ -7,7 +7,7 @@ import yandexcloud
 from yandex.cloud.lockbox.v1.payload_service_pb2 import GetPayloadRequest
 from yandex.cloud.lockbox.v1.payload_service_pb2_grpc import PayloadServiceStub
 
-logger = logging.getLogger()
+logger = logging.getLogger(__name__)
 
 boto_session = None
 boto_session_async = None
