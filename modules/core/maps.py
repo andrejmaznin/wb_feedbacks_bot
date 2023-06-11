@@ -1,3 +1,4 @@
+from app.settings import settings
 from modules.feedbacks import (reply_cabinet_handler, scan_cabinet_handler,
                                update_feedbacks_handler)
 from modules.microsoft.handlers import refresh_ms_token_handler
@@ -9,7 +10,6 @@ from modules.wb_bot.purchases import (handle_enter_promocode_purchase_command,
 from modules.wb_bot.users import (handle_users_add_command,
                                   handle_users_command,
                                   handle_users_remove_command)
-from settings import event_settings
 
 COMMAND_FUNCTION_MAP = {
     'users': handle_users_command,
@@ -26,8 +26,8 @@ PURCHASE_COMMAND_FUNCTION_MAP = {
 }
 
 EVENT_FUNCTION_MAP = {
-    event_settings.ms_refresh: refresh_ms_token_handler,
-    event_settings.scan_cabinet: scan_cabinet_handler,
-    event_settings.reply_cabinet: reply_cabinet_handler,
-    event_settings.update_feedbacks: update_feedbacks_handler
+    settings.TRIGGERS.ms_refresh: refresh_ms_token_handler,
+    settings.YMQ.scan_id: scan_cabinet_handler,
+    settings.YMQ.reply_id: reply_cabinet_handler,
+    settings.YMQ.update_id: update_feedbacks_handler
 }

@@ -1,12 +1,12 @@
 import json
-import os
 import pipes
 
 import pandas as pd
 import ydb
 from ydb import Driver
 
-from connections import get_driver
+from app.connections import get_driver
+from app.settings import settings
 from modules.feedbacks.schemas import (BarcodeFeedbackSchema,
                                        BrandFeedbackSchema)
 
@@ -43,7 +43,7 @@ def import_barcode_feedbacks(ydb_driver: Driver, table_content: bytes, cabinet_i
             'pos_feedback', ydb.OptionalType(ydb.PrimitiveType.String)
         )
     )
-    ydb_driver.table_client.bulk_upsert(os.getenv('YDB_DATABASE') + '/barcode_feedbacks', rows, column_types)
+    ydb_driver.table_client.bulk_upsert(settings.YDB.database + '/barcode_feedbacks', rows, column_types)
 
 
 def import_brand_feedbacks(ydb_driver: Driver, table_content: bytes, cabinet_id: str) -> None:
@@ -79,7 +79,7 @@ def import_brand_feedbacks(ydb_driver: Driver, table_content: bytes, cabinet_id:
             'pos_feedbacks', ydb.OptionalType(ydb.PrimitiveType.JsonDocument)
         )
     )
-    ydb_driver.table_client.bulk_upsert(os.getenv('YDB_DATABASE') + '/brand_feedbacks', rows, column_types)
+    ydb_driver.table_client.bulk_upsert(settings.YDB.database + '/brand_feedbacks', rows, column_types)
 
 
 def import_feedbacks_from_table(table_content: bytes, cabinet_id: str):

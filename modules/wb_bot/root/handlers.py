@@ -2,8 +2,7 @@ import json
 
 import telebot
 
-from connections import bot
-from connections.ymq import get_refresh_queue
+from app.connections import bot, get_update_queue
 from modules.cabinets.exports import get_formatted_list_of_cabinets
 from modules.cabinets.internals import get_refresh_messages_for_client
 from modules.commands import Commands, initiate_command
@@ -54,11 +53,11 @@ def handler(message: telebot.types.Message, client_id: str):
         )
 
     elif command == '🔄 Обновить ответы':
-        refresh_queue = get_refresh_queue()
+        update_queue = get_update_queue()
 
         tasks = get_refresh_messages_for_client(client_id=client_id)
         for task in tasks:
-            refresh_queue.send_message(
+            update_queue.send_message(
                 MessageBody=json.dumps(task)
             )
 

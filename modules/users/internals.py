@@ -1,7 +1,7 @@
 import uuid
 from typing import Optional
 
-from connections import bot, get_session_pool
+from app.connections import bot, get_session_pool
 from libs.ydb import get_or_generate_id, prepare_and_execute_query
 from modules.users.schemas import UserSchema
 from modules.wb_bot.markups.root import get_root_reply_markup

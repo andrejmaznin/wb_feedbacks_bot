@@ -4,9 +4,9 @@ from typing import List, Mapping, Optional
 
 from pydantic import BaseModel
 
+from app.settings import settings
 from libs.ydb import get_or_generate_id, prepare_and_execute_query
 from libs.ydb.utils import prepare_and_execute_query_async
-from settings import logic_settings
 
 logger = logging.getLogger(__name__)
 
@@ -168,4 +168,4 @@ class CabinetSchema(BaseModel):
             clientId=client_id
         )
         existing_cabinets = rows[0].cabs
-        return True if existing_cabinets < logic_settings.max_cabinets else False
+        return True if existing_cabinets < settings.LOGIC.max_cabinets else False

@@ -1,7 +1,7 @@
 import uuid
 from typing import Dict, List, Optional, Union
 
-from connections import bot
+from app.connections import bot
 from libs.ydb import prepare_and_execute_query
 from modules.commands import Commands, finish_command
 from modules.wb_bot.markups.common import get_back_button_markup

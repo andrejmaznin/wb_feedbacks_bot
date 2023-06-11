@@ -4,7 +4,7 @@ from typing import Dict, List, Optional
 
 from ydb import BackoffSettings, BaseRequestSettings, RetrySettings
 
-from connections import get_session_pool, get_session_pool_async
+from app.connections import get_session_pool, get_session_pool_async
 
 logger = logging.getLogger(__name__)
 

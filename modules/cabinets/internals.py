@@ -1,6 +1,6 @@
 from typing import Dict, List
 
-from connections import bot
+from app.connections import bot
 from libs.microsoft import get_ms_client
 from libs.ydb import prepare_and_execute_query
 from modules.cabinets.messages import format_list_of_cabinets

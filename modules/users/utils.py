@@ -1,6 +1,6 @@
 from typing import Optional
 
-from connections import get_session_pool
+from app.connections import get_session_pool
 
 
 def is_owner(

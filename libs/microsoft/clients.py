@@ -4,8 +4,8 @@ from typing import Optional, Tuple
 
 import requests
 
+from app.settings import settings
 from libs.microsoft.exceptions import MSAuthException
-from settings import microsoft_settings
 
 logger = logging.getLogger(__name__)
 
@@ -92,12 +92,12 @@ class MSAuthClient:
     def get_tokens(self, auth_code: str) -> Tuple[str, str]:
         form_data = {
             'code': auth_code,
-            'client_id': microsoft_settings.client_id,
-            'client_secret': microsoft_settings.client_secret,
+            'client_id': settings.MICROSOFT.client_id,
+            'client_secret': settings.MICROSOFT.client_secret,
             'scope': 'offline_access files.readwrite.all',
             'grant_type': 'authorization_code'
         }
-        params = {'redirect_url': microsoft_settings.redirect_url}
+        params = {'redirect_url': settings.MICROSOFT.redirect_url}
 
         response = requests.post(
             url=self.base_url + '/consumers/oauth2/v2.0/token',
@@ -114,8 +114,8 @@ class MSAuthClient:
     def refresh_tokens(self, refresh_token: str) -> Tuple[str, str]:
         form_data = {
             'refresh_token': refresh_token,
-            'client_id': microsoft_settings.client_id,
-            'client_secret': microsoft_settings.client_secret,
+            'client_id': settings.MICROSOFT.client_id,
+            'client_secret': settings.MICROSOFT.client_secret,
             'scope': 'offline_access files.readwrite.all',
             'grant_type': 'refresh_token'
         }

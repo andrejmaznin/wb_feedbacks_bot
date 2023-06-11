@@ -1,8 +1,8 @@
 import json
 from typing import Dict
 
-from connections import get_reviews_queue
-from connections.ymq import get_cabinets_queue
+from app.connections import get_reply_queue, get_scan_queue
+from app.settings import settings
 from libs.microsoft import get_ms_client
 from libs.wildberries.exceptions import WBAuthException
 from modules.cabinets import notify_invalid_cabinet
@@ -13,12 +13,11 @@ from modules.feedbacks.internals.wildberries import (reply_for_cabinet,
 from modules.feedbacks.schemas import (ReplyCabinetTask, ReplySettingsSchema,
                                        ScanCabinetTask, UpdateFeedbacksTask)
 from modules.purchases import check_should_execute
-from settings import logic_settings
 
 
 def scan_cabinet_handler(message: Dict) -> None:
-    reviews_queue = get_reviews_queue()
-    cabinets_queue = get_cabinets_queue()
+    reviews_queue = get_reply_queue()
+    scan_queue = get_scan_queue()
 
     task = ScanCabinetTask.parse_obj(json.loads(message['details']['message']['body']))
     cabinet = CabinetSchema.get_by_id(id=task.cabinet_id)
@@ -39,9 +38,9 @@ def scan_cabinet_handler(message: Dict) -> None:
             reviews=reviews
         ).json(by_alias=True)
     )
-    cabinets_queue.send_message(
+    scan_queue.send_message(
         MessageBody=task.json(by_alias=True),
-        DelaySeconds=logic_settings.scan_cabinet_delay
+        DelaySeconds=settings.LOGIC.scan_delay
     )
 
 

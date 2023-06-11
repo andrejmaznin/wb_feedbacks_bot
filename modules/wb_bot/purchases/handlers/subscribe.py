@@ -3,19 +3,19 @@ from typing import Optional, Union
 
 from yookassa import Payment
 
-from connections import bot, config_yookassa
+from app.connections import bot, config_yookassa
+from app.settings import settings
 from libs.ydb import prepare_and_execute_query
 from modules.commands import Commands, finish_command
 from modules.wb_bot.markups.purchases import (get_confirm_subscription_markup,
                                               get_purchase_markup)
 from modules.wb_bot.purchases.messages import get_payment_url_message_text
-from settings import logic_settings
 
 
 def handler(
-        message,
-        client_id: str,
-        metadata: Optional[Union[list, dict]] = None
+    message,
+    client_id: str,
+    metadata: Optional[Union[list, dict]] = None
 ):
     text = message.text
     if text == '◀️ Назад':
@@ -36,7 +36,7 @@ def handler(
         payment_id = str(uuid.uuid4())
         payment = Payment.create({
             'amount': {
-                'value': f'{logic_settings.subscription_price}.00',
+                'value': f'{settings.LOGIC.subscription_price}.00',
                 'currency': 'RUB'
             },
             'confirmation': {

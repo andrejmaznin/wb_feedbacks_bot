@@ -1,7 +1,8 @@
 import logging
-import os
 
 import ydb
+
+from app.settings import settings
 
 logger = logging.getLogger(__name__)
 
@@ -17,8 +18,8 @@ def get_driver():
     if driver is not None:
         return driver
     driver = ydb.Driver(
-        endpoint=os.getenv('YDB_ENDPOINT'),
-        database=os.getenv('YDB_DATABASE')
+        endpoint=settings.YDB.endpoint,
+        database=settings.YDB.database
     )
     driver.wait(fail_fast=True, timeout=5)
     return driver
@@ -30,8 +31,8 @@ async def get_driver_async():
     if driver_async is not None:
         return driver_async
     driver_async = ydb.aio.Driver(
-        endpoint=os.getenv('YDB_ENDPOINT'),
-        database=os.getenv('YDB_DATABASE')
+        endpoint=settings.YDB.endpoint,
+        database=settings.YDB.database
     )
     await driver_async.wait(fail_fast=True, timeout=5)
 

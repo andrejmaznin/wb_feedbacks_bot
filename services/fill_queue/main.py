@@ -1,7 +1,7 @@
 import json
 import uuid
 
-from connections.ymq import get_cabinets_queue
+from app.connections import get_scan_queue
 from libs.ydb.utils import prepare_and_execute_query_async
 
 
@@ -42,10 +42,10 @@ async def paginate_cabinets_purchases(limit: int = 10):
 
 
 async def handle_all_cabinets():
-    cabinets_queue = get_cabinets_queue()
+    scan_queue = get_scan_queue()
 
     async for cabinets in paginate_cabinets_purchases(limit=10):
-        cabinets_queue.send_messages(Entries=cabinets)
+        scan_queue.send_messages(Entries=cabinets)
 
 
 async def handler(event, context):

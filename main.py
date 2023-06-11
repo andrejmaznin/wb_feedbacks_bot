@@ -5,8 +5,7 @@ import os
 import telebot
 from flask import Flask, request
 
-from connections import bot
-from connections.ydb import dispose_connections
+from app.connections import bot, dispose_connections
 from modules.core.dispatch import (dispatch_commands, dispatch_event,
                                    dispatch_purchase_command)
 from modules.microsoft import blueprint as microsoft_blueprint

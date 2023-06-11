@@ -1,6 +1,6 @@
 import logging
 
-from connections.boto3 import get_boto_session
+from app.connections.boto3 import get_boto_session
 
 logger = logging.getLogger(__name__)
 

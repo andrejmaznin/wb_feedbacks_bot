@@ -6,7 +6,7 @@ from typing import List, Optional
 import aiohttp
 from redis.asyncio.client import Pipeline
 
-from connections.redis import get_redis_client, get_redis_client_async
+from app.connections import get_redis_client, get_redis_client_async
 from libs.wildberries import WildberriesAPIClient, get_wb_client
 from libs.wildberries.exceptions import WBAuthException
 from libs.wildberries.schemas import ReviewSchema

@@ -1,4 +1,4 @@
-from connections import bot
+from app.connections import bot
 from modules.wb_bot.markups.purchases import get_purchase_markup
 
 

@@ -1,15 +1,14 @@
-import json
 import logging
 from typing import Dict, List, Optional, Union
 
-from connections import bot
-from connections.ymq import get_cabinets_queue
+from app.connections import bot, get_scan_queue
 from libs.microsoft import get_ms_client
 from libs.microsoft.consts import BASE_DIR_PARENT_REFERENCE
 from modules.cabinets.internals import (check_cabinet_exists,
                                         get_formatted_list_of_cabinets)
 from modules.cabinets.schemas import CabinetSchema
 from modules.commands import Commands, finish_command, update_command_metadata
+from modules.feedbacks.schemas import ScanCabinetTask
 from modules.wb_bot.markups.cabinets import get_cabinets_reply_markup
 from modules.wb_bot.markups.common import get_back_button_markup
 
@@ -17,9 +16,9 @@ logger = logging.getLogger(__name__)
 
 
 def handler(
-        message,
-        client_id: str,
-        metadata: Optional[Union[List, Dict]] = None
+    message,
+    client_id: str,
+    metadata: Optional[Union[List, Dict]] = None
 ):
     text = message.text
 
@@ -111,9 +110,9 @@ def handler(
             disable_web_page_preview=True
         )
         try:
-            cabinets_queue = get_cabinets_queue()
-            cabinets_queue.send_message(
-                MessageBody=json.dumps({'clientId': client_id, 'cabinetId': cabinet.id})
+            scan_queue = get_scan_queue()
+            scan_queue.send_message(
+                MessageBody=ScanCabinetTask(clientId=client_id, cabinetId=cabinet.id).json(by_alias=True)
             )
         except Exception as e:
             logger.error(e, exc_info=True)

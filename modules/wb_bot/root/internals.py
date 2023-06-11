@@ -1,8 +1,9 @@
 import json
 
-from connections.ymq import get_cabinets_queue
+from app.connections import get_scan_queue
 from libs.ydb import prepare_and_execute_query
 from modules.cabinets.schemas import CabinetSchema
+from modules.feedbacks.schemas import ScanCabinetTask
 
 
 def start_bot(client_id: str):
@@ -14,10 +15,10 @@ def start_bot(client_id: str):
         clientId=client_id
     )
     cabinets = CabinetSchema.get_for_client(client_id=client_id)
-    cabinets_queue = get_cabinets_queue()
+    scan_queue = get_scan_queue()
     for cabinet in cabinets:
-        cabinets_queue.send_message(
-            MessageBody=json.dumps({'clientId': client_id, 'cabinetId': cabinet.id})
+        scan_queue.send_message(
+            MessageBody=ScanCabinetTask(clientId=client_id, cabinetId=cabinet.id)
         )
 
 

@@ -1,6 +1,6 @@
 from typing import Dict, List, Optional, Union
 
-from connections import bot
+from app.connections import bot
 from modules.cabinets.internals import (delete_invalid_cabinets_for_client,
                                         get_formatted_list_of_cabinets)
 from modules.cabinets.schemas import CabinetSchema

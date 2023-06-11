@@ -1,6 +1,6 @@
 from typing import Dict, List, Optional, Union
 
-from connections import bot
+from app.connections import bot
 from modules.commands import Commands, finish_command, initiate_command
 from modules.wb_bot.markups.common import get_back_button_markup
 from modules.wb_bot.markups.root import get_root_reply_markup
