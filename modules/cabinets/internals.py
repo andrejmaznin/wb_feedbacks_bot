@@ -28,13 +28,11 @@ def delete_invalid_cabinets_for_client(client_id: str) -> None:
     for table_id in table_ids:
         ms_client.delete_item(item_id=table_id)
     prepare_and_execute_query(
-        'DECLARE $clientId AS String;'
-        'DECLARE $cabinetIds AS JsonDocument;'
+        'DECLARE $cabinetIds AS List<String>;'
         'DELETE FROM cabinets WHERE id IN $cabinetIds;'
         'DELETE FROM barcode_feedbacks WHERE cabinet_id IN $cabinetIds;'
         'DELETE FROM brand_feedbacks WHERE cabinet_id IN $cabinetIds;',
-        clientId=client_id,
-        cabinetIds=json.dumps(cabinet_ids)
+        cabinetIds=cabinet_ids
     )
 
 

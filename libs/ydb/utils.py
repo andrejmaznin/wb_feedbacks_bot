@@ -12,7 +12,17 @@ logger = logging.getLogger(__name__)
 def fix_query_params(params: Dict) -> Dict:
     fixed_params = {}
     for k, v in params.items():
-        fixed_params[f'${k}'] = v.encode('utf-8') if isinstance(v, str) else v
+        if isinstance(v, list):
+            fixed_list = []
+            for i in v:
+                if isinstance(i, str):
+                    fixed_list.append(i.encode('utf-8'))
+                else:
+                    fixed_list.append(i)
+            fixed_params[f'${k}'] = fixed_list
+
+        else:
+            fixed_params[f'${k}'] = v.encode('utf-8') if isinstance(v, str) else v
     return fixed_params
 
 
