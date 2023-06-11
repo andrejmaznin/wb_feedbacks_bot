@@ -18,7 +18,7 @@ def start_bot(client_id: str):
     scan_queue = get_scan_queue()
     for cabinet in cabinets:
         scan_queue.send_message(
-            MessageBody=ScanCabinetTask(clientId=client_id, cabinetId=cabinet.id)
+            MessageBody=ScanCabinetTask(clientId=client_id, cabinetId=cabinet.id).json(by_alias=True)
         )
 
 

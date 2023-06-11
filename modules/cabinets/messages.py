@@ -1,6 +1,6 @@
 from typing import List
 
-from modules.cabinets import CabinetSchema
+from modules.cabinets.schemas import CabinetSchema
 
 
 def format_list_of_cabinets(cabinets: List[CabinetSchema]) -> str:
