@@ -1,5 +1,5 @@
 import logging
-from typing import Optional, Dict, List, Union, Tuple, Any
+from typing import Any, Dict, List, Optional, Tuple, Union
 
 from modules.commands import internals
 from modules.commands.consts import Commands

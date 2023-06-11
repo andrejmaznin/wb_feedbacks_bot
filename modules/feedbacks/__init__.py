@@ -1,1 +1,2 @@
-from .handlers import scan_cabinet_handler, reply_cabinet_handler, update_feedbacks_handler
+from .handlers import (reply_cabinet_handler, scan_cabinet_handler,
+                       update_feedbacks_handler)

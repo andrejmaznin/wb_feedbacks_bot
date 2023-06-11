@@ -1,14 +1,15 @@
 import json
 import logging
-from typing import Optional, Union, List, Dict
+from typing import Dict, List, Optional, Union
 
-from modules.commands import finish_command, Commands, update_command_metadata
 from connections import bot
 from connections.ymq import get_cabinets_queue
 from libs.microsoft import get_ms_client
 from libs.microsoft.consts import BASE_DIR_PARENT_REFERENCE
-from modules.cabinets.internals import get_formatted_list_of_cabinets, check_cabinet_exists
+from modules.cabinets.internals import (check_cabinet_exists,
+                                        get_formatted_list_of_cabinets)
 from modules.cabinets.schemas import CabinetSchema
+from modules.commands import Commands, finish_command, update_command_metadata
 from modules.wb_bot.markups.cabinets import get_cabinets_reply_markup
 from modules.wb_bot.markups.common import get_back_button_markup
 

@@ -3,7 +3,8 @@ from typing import List, Mapping, Optional
 from pydantic import BaseModel, Field
 
 from libs.wildberries.schemas import ReviewSchema
-from libs.ydb.utils import prepare_and_execute_query_async, prepare_and_execute_query
+from libs.ydb.utils import (prepare_and_execute_query,
+                            prepare_and_execute_query_async)
 
 
 class BarcodeFeedbackSchema(BaseModel):

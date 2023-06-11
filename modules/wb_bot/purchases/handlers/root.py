@@ -1,9 +1,9 @@
-from modules.commands import initiate_command, Commands
 from connections import bot
-from modules.wb_bot.purchases.consts import OFFER_MESSAGE_TEXT
-from modules.wb_bot.purchases.messages import send_paywall_message
+from modules.commands import Commands, initiate_command
 from modules.wb_bot.markups.common import get_back_button_markup
 from modules.wb_bot.markups.purchases import get_confirm_subscription_markup
+from modules.wb_bot.purchases.consts import OFFER_MESSAGE_TEXT
+from modules.wb_bot.purchases.messages import send_paywall_message
 from settings import logic_settings
 
 

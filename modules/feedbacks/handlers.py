@@ -8,8 +8,10 @@ from libs.wildberries.exceptions import WBAuthException
 from modules.cabinets import notify_invalid_cabinet
 from modules.cabinets.schemas import CabinetSchema
 from modules.feedbacks.internals.excel import import_feedbacks_from_table
-from modules.feedbacks.internals.wildberries import scan_cabinet, reply_for_cabinet
-from modules.feedbacks.schemas import ScanCabinetTask, ReplyCabinetTask, ReplySettingsSchema, UpdateFeedbacksTask
+from modules.feedbacks.internals.wildberries import (reply_for_cabinet,
+                                                     scan_cabinet)
+from modules.feedbacks.schemas import (ReplyCabinetTask, ReplySettingsSchema,
+                                       ScanCabinetTask, UpdateFeedbacksTask)
 from modules.purchases import check_should_execute
 from settings import logic_settings
 

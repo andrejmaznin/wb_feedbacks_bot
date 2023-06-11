@@ -1,7 +1,7 @@
-from typing import Optional, Union, List, Dict
+from typing import Dict, List, Optional, Union
 
-from modules.commands import finish_command, Commands
 from connections import bot
+from modules.commands import Commands, finish_command
 from modules.users.internals import add_user, get_formatted_list_of_users
 from modules.wb_bot.markups.common import get_back_button_markup
 from modules.wb_bot.markups.users import get_users_reply_markup

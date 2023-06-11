@@ -7,7 +7,8 @@ import ydb
 from ydb import Driver
 
 from connections import get_driver
-from modules.feedbacks.schemas import BarcodeFeedbackSchema, BrandFeedbackSchema
+from modules.feedbacks.schemas import (BarcodeFeedbackSchema,
+                                       BrandFeedbackSchema)
 
 
 def import_barcode_feedbacks(ydb_driver: Driver, table_content: bytes, cabinet_id: str) -> None:

@@ -7,9 +7,10 @@ from flask import Flask, request
 
 from connections import bot
 from connections.ydb import dispose_connections
-from modules.core.dispatch import dispatch_purchase_command, dispatch_commands, dispatch_event
+from modules.core.dispatch import (dispatch_commands, dispatch_event,
+                                   dispatch_purchase_command)
 from modules.microsoft import blueprint as microsoft_blueprint
-from modules.purchases import handle_successful_payment, check_has_purchase
+from modules.purchases import check_has_purchase, handle_successful_payment
 from modules.users.exports import authorize_user, create_client_and_user
 
 logger = logging.getLogger(__name__)

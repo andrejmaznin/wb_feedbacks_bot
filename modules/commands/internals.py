@@ -1,10 +1,10 @@
 import json
 import logging
 import uuid
-from typing import Optional, Dict, List, Union, Tuple, Any
+from typing import Any, Dict, List, Optional, Tuple, Union
 
-from modules.commands.consts import Commands, COMMAND_PARENTS
 from libs.ydb.utils import prepare_and_execute_query
+from modules.commands.consts import COMMAND_PARENTS, Commands
 
 logger = logging.getLogger(__name__)
 

@@ -1,9 +1,9 @@
 import uuid
-from typing import Optional, Union, List, Dict
+from typing import Dict, List, Optional, Union
 
-from modules.commands import finish_command, Commands
 from connections import bot
 from libs.ydb import prepare_and_execute_query
+from modules.commands import Commands, finish_command
 from modules.wb_bot.markups.common import get_back_button_markup
 from modules.wb_bot.markups.purchases import get_purchase_markup
 from modules.wb_bot.markups.root import get_root_reply_markup

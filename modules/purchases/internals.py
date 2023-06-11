@@ -2,8 +2,8 @@ import uuid
 
 from connections import bot
 from libs.ydb import prepare_and_execute_query
-from modules.wb_bot.markups.root import get_root_reply_markup
 from modules.users.schemas import UserSchema
+from modules.wb_bot.markups.root import get_root_reply_markup
 
 
 def check_has_purchase(client_id: str) -> bool:

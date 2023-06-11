@@ -1,9 +1,10 @@
-from typing import Optional, Union, List, Dict
+from typing import Dict, List, Optional, Union
 
-from modules.commands import initiate_command, Commands, finish_command
 from connections import bot
-from modules.cabinets.internals import get_formatted_list_of_cabinets, delete_invalid_cabinets_for_client
+from modules.cabinets.internals import (delete_invalid_cabinets_for_client,
+                                        get_formatted_list_of_cabinets)
 from modules.cabinets.schemas import CabinetSchema
+from modules.commands import Commands, finish_command, initiate_command
 from modules.wb_bot.markups.cabinets import get_cabinets_reply_markup
 from modules.wb_bot.markups.common import get_back_button_markup
 from modules.wb_bot.markups.root import get_root_reply_markup

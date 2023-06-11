@@ -4,15 +4,15 @@ import telebot
 
 from connections import bot
 from connections.ymq import get_refresh_queue
-from modules.wb_bot.markups.cabinets import get_cabinets_reply_markup
-from modules.wb_bot.markups.root import get_root_reply_markup
-from modules.wb_bot.markups.users import get_users_reply_markup
 from modules.cabinets.exports import get_formatted_list_of_cabinets
 from modules.cabinets.internals import get_refresh_messages_for_client
-from modules.commands import initiate_command, Commands
+from modules.commands import Commands, initiate_command
 from modules.feedbacks.schemas import ReplySettingsSchema
 from modules.users.exports import get_formatted_list_of_users
 from modules.users.utils import is_owner
+from modules.wb_bot.markups.cabinets import get_cabinets_reply_markup
+from modules.wb_bot.markups.root import get_root_reply_markup
+from modules.wb_bot.markups.users import get_users_reply_markup
 from modules.wb_bot.root.internals import start_bot, stop_bot
 
 

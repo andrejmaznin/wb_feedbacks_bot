@@ -1,1 +1,2 @@
-from .exports import check_should_execute, check_has_purchase, handle_successful_payment
+from .exports import (check_has_purchase, check_should_execute,
+                      handle_successful_payment)

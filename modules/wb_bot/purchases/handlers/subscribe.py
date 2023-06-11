@@ -3,11 +3,12 @@ from typing import Optional, Union
 
 from yookassa import Payment
 
-from modules.commands import Commands, finish_command
 from connections import bot, config_yookassa
 from libs.ydb import prepare_and_execute_query
+from modules.commands import Commands, finish_command
+from modules.wb_bot.markups.purchases import (get_confirm_subscription_markup,
+                                              get_purchase_markup)
 from modules.wb_bot.purchases.messages import get_payment_url_message_text
-from modules.wb_bot.markups.purchases import get_confirm_subscription_markup, get_purchase_markup
 from settings import logic_settings
 
 

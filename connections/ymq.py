@@ -1,6 +1,6 @@
 import os
 
-from connections.boto3 import get_boto_session_async, get_boto_session
+from connections.boto3 import get_boto_session, get_boto_session_async
 
 reviews_queue = None
 reviews_queue_async = None

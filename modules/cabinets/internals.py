@@ -1,5 +1,4 @@
-import json
-from typing import List, Dict
+from typing import Dict, List
 
 from connections import bot
 from libs.microsoft import get_ms_client

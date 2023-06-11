@@ -1,10 +1,14 @@
-from modules.feedbacks import scan_cabinet_handler, reply_cabinet_handler, update_feedbacks_handler
+from modules.feedbacks import (reply_cabinet_handler, scan_cabinet_handler,
+                               update_feedbacks_handler)
 from modules.microsoft.handlers import refresh_ms_token_handler
-from modules.wb_bot.cabinets import handle_cabinets_command, handle_cabinets_add_command, handle_cabinets_remove_command
-from modules.wb_bot.purchases import handle_enter_promocode_purchase_command, \
-    handle_subscribe_purchase_command
-from modules.wb_bot.users import handle_users_command, handle_users_add_command, \
-    handle_users_remove_command
+from modules.wb_bot.cabinets import (handle_cabinets_add_command,
+                                     handle_cabinets_command,
+                                     handle_cabinets_remove_command)
+from modules.wb_bot.purchases import (handle_enter_promocode_purchase_command,
+                                      handle_subscribe_purchase_command)
+from modules.wb_bot.users import (handle_users_add_command,
+                                  handle_users_command,
+                                  handle_users_remove_command)
 from settings import event_settings
 
 COMMAND_FUNCTION_MAP = {

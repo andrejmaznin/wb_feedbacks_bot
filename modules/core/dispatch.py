@@ -2,7 +2,8 @@ import logging
 from typing import Dict
 
 from modules.commands import get_user_command_and_metadata
-from modules.core.maps import COMMAND_FUNCTION_MAP, PURCHASE_COMMAND_FUNCTION_MAP, EVENT_FUNCTION_MAP
+from modules.core.maps import (COMMAND_FUNCTION_MAP, EVENT_FUNCTION_MAP,
+                               PURCHASE_COMMAND_FUNCTION_MAP)
 from modules.wb_bot.purchases import handle_purchase_command
 from modules.wb_bot.root import handle_root_command
 

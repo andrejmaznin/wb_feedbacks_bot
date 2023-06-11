@@ -7,7 +7,7 @@ import aiohttp
 from redis.asyncio.client import Pipeline
 
 from connections.redis import get_redis_client, get_redis_client_async
-from libs.wildberries import get_wb_client, WildberriesAPIClient
+from libs.wildberries import WildberriesAPIClient, get_wb_client
 from libs.wildberries.exceptions import WBAuthException
 from libs.wildberries.schemas import ReviewSchema
 from libs.ydb.utils import prepare_and_execute_query_async

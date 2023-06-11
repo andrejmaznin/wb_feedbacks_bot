@@ -1,5 +1,4 @@
-from libs.microsoft.clients import MSAPIClient
-from libs.microsoft.clients import MSAuthClient
+from libs.microsoft.clients import MSAPIClient, MSAuthClient
 from libs.microsoft.credentials import MSAdminCredentials
 
 credentials = None
