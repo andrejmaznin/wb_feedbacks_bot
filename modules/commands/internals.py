@@ -26,10 +26,7 @@ def can_initiate_command(
 
     if rows:
         existing_command = rows[0].command.decode('utf-8')
-        if existing_command == COMMAND_PARENTS[command].value:
-            return True
-        return False
-
+        return existing_command == COMMAND_PARENTS[command].value
     return True
 
 
