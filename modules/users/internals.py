@@ -149,7 +149,7 @@ def create_client_and_user(
 
     with pool.checkout() as session:
         session.transaction().execute(
-            f'UPSERT INTO clients (id) VALUES ("{client_id}")',
+            f'UPSERT INTO clients (id, cabinets_cap) VALUES ("{client_id}", 1)',
             commit_tx=True
         )
         if username is not None:

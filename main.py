@@ -21,8 +21,12 @@ app.register_blueprint(blueprint=microsoft_blueprint, url_prefix='/microsoft')
 @app.route('/yookassa', methods=['POST'])
 def handle_successful_payment_webhook():
     webhook_body = request.json
+    logger.info(webhook_body)
     if webhook_body['event'] == 'payment.succeeded':
-        handle_successful_payment(webhook_body['object'].get('metadata', {}).get('paymentId', ''))
+        handle_successful_payment(
+            payment_id=webhook_body['object'].get('metadata', {}).get('paymentId', ''),
+            cabinets_cap=int(webhook_body['object'].get('metadata', {}).get('cabinetsCap', 1))
+        )
 
     return {
         'statusCode': 200,
