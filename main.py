@@ -6,10 +6,12 @@ import telebot
 from flask import Flask, request
 
 from app.connections import bot, dispose_connections
+from app.settings import settings
 from modules.core.dispatch import (dispatch_commands, dispatch_event,
                                    dispatch_purchase_command)
 from modules.microsoft import blueprint as microsoft_blueprint
 from modules.purchases import check_has_purchase, handle_successful_payment
+from modules.purchases.consts import OFFER_TEXT
 from modules.users.exports import authorize_user, create_client_and_user
 
 logger = logging.getLogger(__name__)
@@ -45,6 +47,11 @@ def process_webhook():
                 username=update.message.from_user.username
             )
             if user is None:
+                bot.send_message(
+                    text=OFFER_TEXT.format(price_1=settings.LOGIC.price_1),
+                    chat_id=update.message.from_user.id,
+                    parse_mode='MarkdownV2'
+                )
                 user = create_client_and_user(
                     telegram_id=update.message.from_user.id,
                     username=update.message.from_user.username
@@ -52,6 +59,7 @@ def process_webhook():
                 client_id = user.client_id
             else:
                 client_id = user.client_id
+
             if check_has_purchase(client_id):
                 if update.message.text or update.message.document:
                     dispatch_commands(update.message, client_id)
