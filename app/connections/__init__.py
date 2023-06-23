@@ -1,6 +1,7 @@
 import telebot
 
 from app.settings import settings
+
 from .boto3 import get_boto_session
 from .object_storage import get_storage_client
 from .redis import get_redis_client, get_redis_client_async

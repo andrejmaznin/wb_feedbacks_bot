@@ -1,4 +1,4 @@
-from pydantic import BaseSettings
+from pydantic import BaseSettings, Field
 
 from app.settings.cloud import (RedisSettings, SecretSettings,
                                 TelegramSettings, YCTriggerSettings,
@@ -18,6 +18,7 @@ class BackendSettings(BaseSettings):
     MICROSOFT: MicrosoftSettings = MicrosoftSettings()
     YOOKASSA: YooKassaSettings = YooKassaSettings()
     TELEGRAM: TelegramSettings = TelegramSettings()
+    ENVIRONMENT: str = Field(..., env='ENVIRONMENT')
 
 
 _settings = BackendSettings()
