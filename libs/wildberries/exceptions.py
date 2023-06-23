@@ -1,0 +1,2 @@
+class WBAuthException(BaseException):
+    pass

@@ -1,0 +1,2 @@
+class MSAuthException(BaseException):
+    pass

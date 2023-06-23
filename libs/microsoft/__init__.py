@@ -1,16 +1,23 @@
-from libs.microsoft.client import MicrosoftAPIClient
+from libs.microsoft.clients import MSAPIClient, MSAuthClient
 from libs.microsoft.credentials import MSAdminCredentials
 
 credentials = None
-microsoft_client = None
+client = None
+auth_client = None
 
 
-def get_microsoft_client():
-    global microsoft_client
+def get_ms_client():
+    global client, credentials
 
-    if microsoft_client is None:
+    if client is None:
         credentials = MSAdminCredentials.initialize()
-        microsoft_client = MicrosoftAPIClient(token=credentials.access_token)
+        client = MSAPIClient(token=credentials.access_token)
+    return client
 
-    return microsoft_client
 
+def get_ms_auth_client():
+    global auth_client
+
+    if auth_client is None:
+        auth_client = MSAuthClient()
+    return auth_client
