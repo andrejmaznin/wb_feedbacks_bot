@@ -11,9 +11,9 @@ from modules.wb_bot.markups.root import get_root_reply_markup
 
 
 def handler(
-        message,
-        client_id: str,
-        metadata: Optional[Union[List, Dict]] = None
+    message,
+    client_id: str,
+    metadata: Optional[Union[List, Dict]] = None
 ):
     command = message.text
 
@@ -24,6 +24,13 @@ def handler(
                 text='Вы достигли лимита кабинетов селлера в аккаунте!\n'
                      'Удалите существующий кабинет, чтобы добавить новый',
                 reply_markup=get_cabinets_reply_markup()
+            )
+            bot.send_message(
+                chat_id=message.from_user.id,
+                text=get_formatted_list_of_cabinets(client_id=client_id),
+                reply_markup=get_cabinets_reply_markup(),
+                parse_mode='MarkdownV2',
+                disable_web_page_preview=True
             )
             return
 

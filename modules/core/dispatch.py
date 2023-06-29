@@ -1,4 +1,7 @@
+import asyncio
+import inspect
 import logging
+import selectors
 from typing import Dict
 
 from modules.commands import get_user_command_and_metadata
@@ -28,9 +31,20 @@ def dispatch_purchase_command(message, client_id: str, user_id: str):
         handle_purchase_command(message=message, client_id=client_id, user_id=user_id)
 
 
+class MyPolicy(asyncio.DefaultEventLoopPolicy):
+    def new_event_loop(self):
+        selector = selectors.SelectSelector()
+        return asyncio.SelectorEventLoop(selector)
+
+
 def dispatch_event(message: Dict):
     if details := message.get('details'):
         resource_id = details.get('trigger_id') or details.get('queue_id') or None
         if event_func := EVENT_FUNCTION_MAP.get(resource_id):
-            logger.info(f'Handling event from {resource_id} with {event_func.__name__}')
-            event_func(message)
+            print(f'Handling event from {resource_id} with {event_func.__name__}')
+            if inspect.iscoroutinefunction(event_func):
+                print(f'Running event function asynchronously')
+                asyncio.ensure_future(event_func(message))
+            else:
+                print(f'Running event function synchronously')
+                event_func(message)

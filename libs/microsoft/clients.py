@@ -21,6 +21,17 @@ class MSAPIClient:
     def authorization_headers(self):
         return {'Authorization': f'Bearer {self.token}'}
 
+    def get_item(self, item_id) -> dict:
+        response = requests.get(
+            url=self.base_url + f'/me/drive/items/{item_id}',
+            headers=self.authorization_headers
+        )
+        if not 200 <= response.status_code < 300:
+            logger.error(response.text)
+            return
+
+        return response.json()
+
     def copy_item(self, item_id: str, parent_reference: dict, name: str) -> Optional[str]:
         body = {
             'parentReference': parent_reference,

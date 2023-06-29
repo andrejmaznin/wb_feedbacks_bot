@@ -4,7 +4,6 @@ from typing import List, Mapping, Optional
 
 from pydantic import BaseModel
 
-from app.settings import settings
 from libs.ydb import get_or_generate_id, prepare_and_execute_query
 from libs.ydb.utils import prepare_and_execute_query_async
 
@@ -162,10 +161,17 @@ class CabinetSchema(BaseModel):
 
     @classmethod
     def check_can_create(cls, client_id: str) -> bool:
-        rows = prepare_and_execute_query(
+        count_rows = prepare_and_execute_query(
             'DECLARE $clientId AS String;'
-            'SELECT COUNT(id) AS cabs FROM cabinets WHERE client_id=$clientId',
+            'SELECT COUNT(id) AS cabs_count FROM cabinets WHERE client_id=$clientId',
             clientId=client_id
         )
-        existing_cabinets = rows[0].cabs
-        return True if existing_cabinets < settings.LOGIC.max_cabinets else False
+        cap_row = prepare_and_execute_query(
+            'DECLARE $clientId AS String;'
+            'SELECT cabinets_cap FROM clients WHERE id=$clientId',
+            clientId=client_id
+        )
+
+        existing_cabinets = count_rows[0].cabs_count
+        cabinets_cap = cap_row[0].cabinets_cap
+        return existing_cabinets < cabinets_cap

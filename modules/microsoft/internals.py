@@ -11,7 +11,7 @@ def get_token(auth_code: str) -> None:
 
     access_token, refresh_token = ms_auth_client.get_tokens(auth_code=auth_code)
     credentials = AdminCredentialsSchema(id='andrew', ms_access_token=access_token, ms_refresh_token=refresh_token)
-    credentials.update()
+    credentials.upsert()
 
 
 def refresh_ms_token() -> None:
@@ -19,6 +19,7 @@ def refresh_ms_token() -> None:
 
     credentials = AdminCredentialsSchema.get_by_id(id_='andrew')
     new_access_token, new_refresh_token = ms_auth_client.refresh_tokens(refresh_token=credentials.ms_refresh_token)
-    credentials.ms_access_token = new_access_token
-    credentials.ms_refresh_token = new_refresh_token
-    credentials.update()
+    credentials.update_tokens(
+        new_access_token=new_access_token,
+        new_refresh_token=new_refresh_token
+    )

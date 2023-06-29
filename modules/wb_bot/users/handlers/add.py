@@ -2,7 +2,7 @@ from typing import Dict, List, Optional, Union
 
 from app.connections import bot
 from modules.commands import Commands, finish_command
-from modules.users.internals import add_user, get_formatted_list_of_users
+from modules.users.internals import get_formatted_list_of_users, invite_user
 from modules.wb_bot.markups.common import get_back_button_markup
 from modules.wb_bot.markups.users import get_users_reply_markup
 
@@ -42,7 +42,7 @@ def handler(
         )
         return
 
-    add_user(
+    invite_user(
         client_id=client_id,
         data=text
     )

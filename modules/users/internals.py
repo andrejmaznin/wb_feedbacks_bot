@@ -8,22 +8,24 @@ from modules.wb_bot.markups.root import get_root_reply_markup
 from modules.wb_bot.users.messages import format_list_of_users
 
 
-def add_user(client_id: str, data: str):
-    pool = get_session_pool()
-
+def invite_user(client_id: str, data: str):
     data = data.lstrip('@')
+
     user_id = get_or_generate_id(
-        f'SELECT id FROM users '
-        f'WHERE (data="{data}" OR username="{data}" OR telegram_id="{data}") '
-        f'AND client_id="{client_id}"'
+        'DECLARE $data AS String;'
+        'SELECT id FROM users WHERE (data=$data OR username=$data OR telegram_id=$data) AND owner<>True',
+        data=data
     )
 
-    with pool.checkout() as session:
-        session.transaction().execute(
-            f'UPSERT INTO users (id, client_id, pending, data) '
-            f'VALUES ("{user_id}", "{client_id}", True, "{data}")',
-            commit_tx=True
-        )
+    prepare_and_execute_query(
+        'DECLARE $userId AS String;'
+        'DECLARE $clientId AS String;'
+        'DECLARE $data AS String;'
+        'UPSERT INTO users (id, client_id, pending, data) VALUES ($userId, $clientId, True, $data)',
+        userId=user_id,
+        clientId=client_id,
+        data=data
+    )
 
 
 def activate_invited_user(

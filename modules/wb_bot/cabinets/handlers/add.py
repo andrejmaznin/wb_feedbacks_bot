@@ -73,6 +73,8 @@ def handler(
             title=metadata['title'],
             token=text
         )
+        print('created cabinet')
+
         ms_client = get_ms_client()
 
         table_item_id = ms_client.copy_item(
@@ -80,17 +82,20 @@ def handler(
             parent_reference=BASE_DIR_PARENT_REFERENCE,
             name=f'{cabinet.id}.xlsx'
         )
+        print('copied table')
         table_url = ms_client.create_url_for_item(
             item_id=table_item_id,
             url_type='edit',
             scope='anonymous'
         )
+        print('created url')
 
         CabinetSchema.update_table_data(
             id_=cabinet.id,
             table_url=table_url,
             table_id=table_item_id
         )
+        print('updated table data')
 
         finish_command(
             client_id=client_id,
@@ -99,9 +104,19 @@ def handler(
         )
         bot.send_message(
             chat_id=message.from_user.id,
-            text=f'Кабинет селлера успешно добавлен!\n',
+            text='Кабинет селлера успешно добавлен!',
             reply_markup=get_cabinets_reply_markup()
         )
+        '''
+        bot.send_message(
+            chat_id=message.from_user.id,
+            text='Теперь занесите в онлайн\-таблицу ответы на отзывы:\n'
+                 '`1.` На первом листе можно добавить ответы для конкретных товаров \(по их артикулам на WB\)\n'
+                 '`2.` На втором — ответы для брендов в целом \(по названиям брендов\)',
+            reply_markup=get_cabinets_reply_markup(),
+            parse_mode='MarkdownV2',
+        )
+        '''
         bot.send_message(
             chat_id=message.from_user.id,
             text=get_formatted_list_of_cabinets(client_id),

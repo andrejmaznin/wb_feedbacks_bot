@@ -7,7 +7,7 @@ def format_list_of_cabinets(cabinets: List[CabinetSchema]) -> str:
     active_list = [cab for cab in cabinets if cab.invalid is False]
     invalid_list = [cab for cab in cabinets if cab.invalid is True]
 
-    title = 'Вот список кабинетов селлера в вашем аккаунте'
+    title = 'Вот список кабинетов селлера в вашем аккаунте:'
     active_title = '✅ Активные кабинеты:'
     invalid_title = '🚫 Неактивные кабинеты \(бот не может авторизоваться\):'
     active_text = ''

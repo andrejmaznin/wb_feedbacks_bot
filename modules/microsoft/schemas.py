@@ -32,7 +32,7 @@ class AdminCredentialsSchema(BaseModel):
         )
         return cls.parse_row(rows[0]) if rows else None
 
-    def update(self) -> None:
+    def upsert(self) -> None:
         prepare_and_execute_query(
             'DECLARE $credentialId AS String;'
             'DECLARE $MSAccessToken AS String;'
@@ -43,3 +43,18 @@ class AdminCredentialsSchema(BaseModel):
             MSAccessToken=self.ms_access_token,
             MSRefreshToken=self.ms_refresh_token
         )
+
+    def fetch(self) -> 'AdminCredentialsSchema':
+        rows = prepare_and_execute_query(
+            'DECLARE $credentialId AS String;'
+            'SELECT id, ms_access_token, ms_refresh_token FROM admin_credentials '
+            'WHERE id=$credentialId',
+            credentialId=self.id
+        )
+        return self.parse_row(rows[0])
+
+    def update_tokens(self, new_access_token: str, new_refresh_token: str) -> 'AdminCredentialsSchema':
+        self.ms_access_token = new_access_token
+        self.ms_refresh_token = new_refresh_token
+        self.upsert()
+        return self.fetch()
