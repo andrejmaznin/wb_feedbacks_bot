@@ -27,7 +27,7 @@ def handler(
         finish_command(
             client_id=client_id,
             telegram_id=message.from_user.id,
-            command=Commands.CABINETS_ADD
+            command=Commands.CABINETS_UPDATE
         )
         bot.send_message(
             chat_id=message.from_user.id,
@@ -57,6 +57,7 @@ def handler(
             return
 
         metadata['step'] = 'token'
+        metadata['id'] = rows[0].id.decode('utf-8')
         update_command_metadata(
             client_id=client_id,
             telegram_id=message.from_user.id,
@@ -81,6 +82,17 @@ def handler(
             'DECLARE $cabinetId AS String;'
             'DECLARE $token AS String;'
             'UPSERT INTO cabinets (id, token) VALUES ($cabinetId, $token)',
-            cabinetId=rows[0].id.decode('utf-8'),
+            cabinetId=metadata[id],
             token=text
+        )
+
+        finish_command(
+            client_id=client_id,
+            telegram_id=message.from_user.id,
+            command=Commands.CABINETS_UPDATE
+        )
+        bot.send_message(
+            chat_id=message.from_user.id,
+            text='Токен кабинета селлера успешно обновлён!',
+            reply_markup=get_cabinets_reply_markup()
         )
