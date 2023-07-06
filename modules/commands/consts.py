@@ -11,11 +11,13 @@ class Commands(str, Enum):
     CABINETS = 'cabinets'
     CABINETS_ADD = 'cabinets_add'
     CABINETS_REMOVE = 'cabinets_remove'
+    CABINETS_UPDATE = 'cabinets_update'
 
 
 COMMAND_PARENTS = {
     Commands.USERS_ADD: Commands.USERS,
     Commands.USERS_REMOVE: Commands.USERS,
     Commands.CABINETS_ADD: Commands.CABINETS,
-    Commands.CABINETS_REMOVE: Commands.CABINETS
+    Commands.CABINETS_REMOVE: Commands.CABINETS,
+    Commands.CABINETS_UPDATE: Commands.CABINETS
 }
