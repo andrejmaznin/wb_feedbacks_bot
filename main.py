@@ -82,7 +82,6 @@ def process_webhook():
     }
 
 
-# temporarily only for events
 @app.route('/', methods=['GET', 'POST'])
 def process_trigger():
     request_body_dict = request.json
