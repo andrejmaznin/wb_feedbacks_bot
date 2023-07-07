@@ -95,7 +95,7 @@ async def handle_review(
             except WBAuthException:
                 pass
         else:
-            await redis_pipe.set(f'no-feedback:{client_id}:{review.barcode}', 'True', ex=12 * 60 * 60)
+            await redis_pipe.set(f'no-feedback:{client_id}:{review.barcode}', 'True', ex=2 * 60 * 60)
     else:
         if settings.complain:
             await wb_client.complain_on_review_async(

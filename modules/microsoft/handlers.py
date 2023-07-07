@@ -18,8 +18,8 @@ def handle_auth_code():
     if code is None:
         return
     get_token(auth_code=code)
-    # ms_client = get_ms_client()
-    # print(f'Test item metadata: {ms_client.get_item(item_id="3A822AFD6B06B1F4!358")}')
+    ms_client = get_ms_client()
+    print(f'Test item metadata: {ms_client.get_item(item_id="3A822AFD6B06B1F4!358")}')
 
     return {
         'statusCode': 200,
@@ -30,8 +30,8 @@ def handle_auth_code():
 @blueprint.get('/refresh')
 def refresh_request_handler():
     refresh_ms_token()
-    # ms_client = get_ms_client()
-    # print(f'Test item metadata: {ms_client.get_item(item_id="3A822AFD6B06B1F4!358")}')
+    ms_client = get_ms_client()
+    print(f'Test item metadata: {ms_client.get_item(item_id="3A822AFD6B06B1F4!358")}')
 
     return {
         'statusCode': 200,
@@ -42,5 +42,4 @@ def refresh_request_handler():
 def refresh_ms_token_handler(message: Dict) -> None:
     refresh_ms_token()
     ms_client = get_ms_client()
-    logger.info('Test item metadata')
-    logger.info(f'Test item metadata: {ms_client.get_item(item_id="3A822AFD6B06B1F4!358")}')
+    print(f'Test item metadata: {ms_client.get_item(item_id="3A822AFD6B06B1F4!358")}')
