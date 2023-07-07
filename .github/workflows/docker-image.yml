@@ -14,5 +14,7 @@ jobs:
 
     steps:
     - uses: actions/checkout@v3
+    - name: Authorize Docker
+      run: docker login --username oauth --password y0_AgAAAAA2JUvPAATuwQAAAADbDXi61m5rXHDbRsyqKBSacrAScGEbuxk cr.yandex
     - name: Build the Docker image
       run: docker build --platform=linux/amd64 . -t cr.yandex/crptc7h0t67d36g7dvob/wb-bot-new:hello
