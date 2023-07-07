@@ -78,7 +78,7 @@ def handler(
             )
             return
 
-        cabinet = prepare_and_execute_query(
+        prepare_and_execute_query(
             'DECLARE $cabinetId AS String;'
             'DECLARE $token AS String;'
             'UPSERT INTO cabinets (id, token) VALUES ($cabinetId, $token)',
