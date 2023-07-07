@@ -58,20 +58,19 @@ def handler(
             reply_markup=get_back_button_markup()
         )
 
-    elif command == '🧹 Очистить неактивные':
-        delete_invalid_cabinets_for_client(client_id=client_id)
-        bot.send_message(
-            chat_id=message.from_user.id,
-            text='Неактивные кабинеты успешно удалены!',
-            reply_markup=get_cabinets_reply_markup()
+    elif command == '🔄 Обновить токен':
+        initiate_command(
+            client_id=client_id,
+            telegram_id=message.from_user.id,
+            command=Commands.CABINETS_UPDATE,
+            metadata={'step': 'title'},
         )
         bot.send_message(
             chat_id=message.from_user.id,
-            text=get_formatted_list_of_cabinets(client_id=client_id),
-            reply_markup=get_cabinets_reply_markup(),
-            parse_mode='MarkdownV2',
-            disable_web_page_preview=True
+            text='Введите название кабинета из списка выше',
+            reply_markup=get_back_button_markup()
         )
+        
 
     elif command == '◀️ Назад':
         finish_command(
