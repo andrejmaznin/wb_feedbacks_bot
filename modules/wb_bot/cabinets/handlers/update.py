@@ -82,7 +82,7 @@ def handler(
             'DECLARE $cabinetId AS String;'
             'DECLARE $token AS String;'
             'UPSERT INTO cabinets (id, token) VALUES ($cabinetId, $token)',
-            cabinetId=metadata[id],
+            cabinetId=metadata['id'],
             token=text
         )
 
