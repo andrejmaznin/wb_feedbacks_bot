@@ -26,7 +26,7 @@ class WildberriesAPIClient:
             url=self.base_url,
             headers=self.get_headers(token=token),
             params={
-                'take': 20,
+                'take': 100,
                 'skip': 0,
                 'hasSupplierComplaint': False,
                 'isAnswered': False,
