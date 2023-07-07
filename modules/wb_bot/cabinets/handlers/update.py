@@ -72,6 +72,14 @@ def handler(
                 reply_markup=get_back_button_markup()
             )
             return
+        
+        cabinet = prepare_and_execute_query(
+            'DECLARE $cabinetId AS String;'
+            'DECLARE $token AS String;'
+            'UPSERT INTO cabinets (id, token) VALUES ($cabinetId, $token)',
+            cabinetId=metadata['id'],
+            token=text
+        )
 
         finish_command(
             client_id=client_id,
