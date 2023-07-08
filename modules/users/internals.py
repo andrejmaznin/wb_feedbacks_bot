@@ -3,9 +3,9 @@ from typing import Optional
 
 from app.connections import bot, get_session_pool
 from libs.ydb import get_or_generate_id, prepare_and_execute_query
+from modules.users.messages import format_list_of_users
 from modules.users.schemas import UserSchema
 from modules.wb_bot.markups.root import get_root_reply_markup
-from modules.wb_bot.users.messages import format_list_of_users
 
 
 def invite_user(client_id: str, data: str):
