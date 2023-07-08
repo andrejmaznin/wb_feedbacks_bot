@@ -16,6 +16,6 @@ jobs:
       - name: Authorize Docker
         run: docker login --username oauth --password ${{ secrets.YANDEX_OAUTH_TOKEN }} cr.yandex
       - name: Build the Docker image
-        run: docker build --platform=linux/amd64 . -t cr.yandex/crpjpmm8eag93kv43jtv/wb-bot-new:$(git rev-parse --short "$GITHUB_SHA")
+        run: docker build --platform=linux/amd64 . -t cr.yandex/crpjpmm8eag93kv43jtv/wb-bot-new:latest
       - name: Push the Docker image
-        run: docker push cr.yandex/crpjpmm8eag93kv43jtv/wb-bot-new:$(git rev-parse --short "$GITHUB_SHA")
+        run: docker push cr.yandex/crpjpmm8eag93kv43jtv/wb-bot-new:latest
