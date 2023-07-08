@@ -12,7 +12,8 @@ from modules.core.dispatch import (dispatch_commands, dispatch_event,
 from modules.microsoft import blueprint as microsoft_blueprint
 from modules.purchases import check_has_purchase, handle_successful_payment
 from modules.purchases.consts import OFFER_TEXT
-from modules.users.exports import authorize_user, create_client_and_user
+from modules.users import (activate_invited_user, create_client_and_user,
+                           get_user)
 
 logger = logging.getLogger(__name__)
 
@@ -42,11 +43,21 @@ def process_webhook():
     update = telebot.types.Update.de_json(request_body_dict)
     try:
         if request_body_dict.get('message'):
-            user = authorize_user(
+            if user := get_user(
                 telegram_id=update.message.from_user.id,
                 username=update.message.from_user.username
-            )
-            if user is None:
+            ):
+                print(f'User: {user}')
+                if user.pending is True:
+                    activate_invited_user(
+                        user_id=user.id,
+                        client_id=user.client_id,
+                        telegram_id=update.message.from_user.id,
+                        username=update.message.from_user.username
+                    )
+                    return
+
+            else:
                 bot.send_message(
                     text=OFFER_TEXT.format(price_1=settings.LOGIC.price_1),
                     chat_id=update.message.from_user.id,
@@ -56,22 +67,20 @@ def process_webhook():
                     telegram_id=update.message.from_user.id,
                     username=update.message.from_user.username
                 )
-                client_id = user.client_id
-            else:
-                client_id = user.client_id
 
-            if check_has_purchase(client_id):
+            if check_has_purchase(user.client_id):
                 if update.message.text or update.message.document:
-                    dispatch_commands(update.message, client_id)
+                    dispatch_commands(update.message, user.client_id)
                 bot.process_new_updates([update])
             else:
                 if update.message.text:
                     dispatch_purchase_command(
                         message=update.message,
-                        client_id=client_id,
+                        client_id=user.client_id,
                         user_id=user.id
                     )
             dispose_connections()
+
     except Exception as e:
         logger.error(f'Logging error {e}', exc_info=True)
         # raise e

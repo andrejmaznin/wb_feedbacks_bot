@@ -4,11 +4,25 @@ from modules.users import internals
 from modules.users.schemas import UserSchema
 
 
-def authorize_user(
+def get_user(
     telegram_id: int,
     username: Optional[str] = None
 ) -> Optional[UserSchema]:
-    return internals.authorize_user(telegram_id=telegram_id, username=username)
+    return internals.get_user(telegram_id=telegram_id, username=username)
+
+
+def activate_invited_user(
+    client_id: str,
+    user_id: str,
+    telegram_id: int,
+    username: Optional[str] = None
+) -> None:
+    return internals.activate_invited_user(
+        client_id=client_id,
+        user_id=user_id,
+        telegram_id=telegram_id,
+        username=username
+    )
 
 
 def create_client_and_user(
