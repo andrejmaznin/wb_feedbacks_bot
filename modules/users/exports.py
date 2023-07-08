@@ -43,3 +43,7 @@ def delete_user(
     username: Optional[str] = None
 ) -> bool:
     return internals.delete_user(client_id=client_id, data=data, telegram_id=telegram_id, username=username)
+
+
+def invite_user(client_id: str, data: str) -> None:
+    return internals.invite_user(client_id=client_id, data=data)
