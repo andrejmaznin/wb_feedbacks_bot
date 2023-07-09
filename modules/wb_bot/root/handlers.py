@@ -20,6 +20,7 @@ def handler(message: telebot.types.Message, client_id: str):
 
     if command == '🟢 Запустить бота':
         start_bot(client_id=client_id)
+        print('Started bot')
         bot.send_message(
             chat_id=message.from_user.id,
             text='Бот успешно запущен',
@@ -28,6 +29,7 @@ def handler(message: telebot.types.Message, client_id: str):
 
     elif command == '🔴 Остановить бота':
         stop_bot(client_id=client_id)
+        print('Stopped bot')
         bot.send_message(
             chat_id=message.from_user.id,
             text='Бот успешно остановлен',
