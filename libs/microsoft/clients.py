@@ -27,7 +27,7 @@ class MSAPIClient:
             headers=self.authorization_headers
         )
         if not 200 <= response.status_code < 300:
-            logger.error(response.text)
+            logger.error('Error while getting item', response.text)
             return
 
         return response.json()
@@ -43,7 +43,7 @@ class MSAPIClient:
             json=body
         )
         if not 200 <= response.status_code < 300:
-            logger.error(response.text)
+            logger.error('Error while copying item', response.text)
             return
 
         while True:
@@ -52,7 +52,7 @@ class MSAPIClient:
                 headers=self.authorization_headers
             )
             if not 200 <= response.status_code < 300:
-                logger.error(response.text)
+                logger.error('Error while scanning', response.text)
                 return
 
             data = response.json()
@@ -72,7 +72,7 @@ class MSAPIClient:
             json=body
         )
         if not 200 <= response.status_code < 300:
-            logger.error(response.text)
+            logger.error('Error while creating url', response.text)
             return
         data = response.json()
         return data['link']['webUrl']
@@ -83,7 +83,7 @@ class MSAPIClient:
             headers=self.authorization_headers
         )
         if not 200 <= response.status_code < 300:
-            logger.error(response.text)
+            logger.error('Error while downloading item', response.text)
             return
         return response.content
 
@@ -93,7 +93,7 @@ class MSAPIClient:
             headers=self.authorization_headers
         )
         if not 200 <= response.status_code < 300:
-            logger.error(response.text)
+            logger.error('Error while deleting item', response.text)
             return
 
 
@@ -116,7 +116,7 @@ class MSAuthClient:
             params=params
         )
         if response.status_code != 200:
-            logger.error(response.text)
+            logger.error('Error while getting tokens', response.text)
             raise MSAuthException
 
         data = response.json()
@@ -135,7 +135,7 @@ class MSAuthClient:
             data=form_data
         )
         if response.status_code != 200:
-            logger.error(response.text)
+            logger.error('Error while refreshing token', response.text)
             raise MSAuthException
 
         data = response.json()
