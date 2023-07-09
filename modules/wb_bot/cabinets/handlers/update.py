@@ -27,7 +27,7 @@ def handler(
         bot.send_message(
             chat_id=message.from_user.id,
             text=get_formatted_list_of_cabinets(client_id),
-            reply_markup=get_cabinets_reply_markup(),
+            reply_markup=get_cabinets_reply_markup(client_id=client_id),
             parse_mode='MarkdownV2',
             disable_web_page_preview=True
         )
@@ -89,12 +89,12 @@ def handler(
         bot.send_message(
             chat_id=message.from_user.id,
             text='Токен кабинета селлера успешно обновлён!',
-            reply_markup=get_cabinets_reply_markup()
+            reply_markup=get_cabinets_reply_markup(client_id=client_id)
         )
         bot.send_message(
             chat_id=message.from_user.id,
             text=get_formatted_list_of_cabinets(client_id),
-            reply_markup=get_cabinets_reply_markup(),
+            reply_markup=get_cabinets_reply_markup(client_id=client_id),
             parse_mode='MarkdownV2',
             disable_web_page_preview=True
         )

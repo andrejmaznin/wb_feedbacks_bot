@@ -23,12 +23,12 @@ def handler(
                 chat_id=message.from_user.id,
                 text='Вы достигли лимита кабинетов селлера в аккаунте!\n'
                      'Удалите существующий кабинет, чтобы добавить новый',
-                reply_markup=get_cabinets_reply_markup()
+                reply_markup=get_cabinets_reply_markup(client_id=client_id)
             )
             bot.send_message(
                 chat_id=message.from_user.id,
                 text=get_formatted_list_of_cabinets(client_id=client_id),
-                reply_markup=get_cabinets_reply_markup(),
+                reply_markup=get_cabinets_reply_markup(client_id=client_id),
                 parse_mode='MarkdownV2',
                 disable_web_page_preview=True
             )
@@ -88,5 +88,5 @@ def handler(
         bot.send_message(
             chat_id=message.from_user.id,
             text='Не поняли вас',
-            reply_markup=get_cabinets_reply_markup()
+            reply_markup=get_cabinets_reply_markup(client_id=client_id)
         )

@@ -160,18 +160,22 @@ class CabinetSchema(BaseModel):
         )
 
     @classmethod
-    def check_can_create(cls, client_id: str) -> bool:
+    def count_for_client(cls, client_id: str) -> int:
         count_rows = prepare_and_execute_query(
             'DECLARE $clientId AS String;'
             'SELECT COUNT(id) AS cabs_count FROM cabinets WHERE client_id=$clientId',
             clientId=client_id
         )
+        return count_rows[0].cabs_count
+
+    @classmethod
+    def check_can_create(cls, client_id: str) -> bool:
+        existing_cabinets = cls.count_for_client(client_id=client_id)
         cap_row = prepare_and_execute_query(
             'DECLARE $clientId AS String;'
             'SELECT cabinets_cap FROM clients WHERE id=$clientId',
             clientId=client_id
         )
 
-        existing_cabinets = count_rows[0].cabs_count
         cabinets_cap = cap_row[0].cabinets_cap
         return existing_cabinets < cabinets_cap
