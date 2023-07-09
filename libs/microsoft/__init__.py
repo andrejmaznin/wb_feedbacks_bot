@@ -21,3 +21,11 @@ def get_ms_client():
         credentials = MSAdminCredentials.initialize()
         client = MSAPIClient(token=credentials.access_token)
     return client
+
+
+def dispose_microsoft_connections() -> None:
+    global credentials, client, auth_client
+
+    credentials = None
+    client = None
+    auth_client = None
