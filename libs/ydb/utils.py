@@ -36,7 +36,7 @@ def prepare_and_execute_query(query: str, **kwargs) -> Optional[List]:
             prepared_query,
             params,
             commit_tx=True,
-            settings=BaseRequestSettings().with_timeout(0.5).with_operation_timeout(0.4).with_cancel_after(0.4)
+            settings=BaseRequestSettings().with_timeout(3).with_operation_timeout(2)
         )
         return query_result
 
