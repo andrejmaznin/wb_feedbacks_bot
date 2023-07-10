@@ -117,7 +117,7 @@ async def reply_for_cabinet(
     redis_client = get_redis_client_async()
     redis_pipe = redis_client.pipeline()
 
-    async with aiohttp.ClientSession(raise_for_status=True) as web_session:
+    async with aiohttp.ClientSession(raise_for_status=True, timeout=2) as web_session:
         tasks = [
             handle_review(
                 client_id=client_id,
