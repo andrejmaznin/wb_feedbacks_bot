@@ -57,7 +57,10 @@ async def get_positive_feedback_text(cabinet_id: str, review: ReviewSchema) -> O
         cabinetId=cabinet_id,
         brand=review.brand
     )
-    return choice(json.loads(rows[0].pos_feedbacks))
+    print(f'Review: {review.id}, Feedbacks for brand {review.brand} and cabinet {cabinet_id}',
+          json.loads(rows[0].pos_feedbacks))
+    feedbacks = json.loads(rows[0].pos_feedbacks)
+    return choice(feedbacks) if feedbacks else None
 
 
 async def get_negative_feedback_text(client_id: str) -> Optional[str]:
@@ -93,8 +96,9 @@ async def handle_review(
                     web_session=web_session
                 )
             except WBAuthException:
-                pass
+                print('Error while replying to review')
         else:
+            print('Setting Redis key', f'no-feedback:{client_id}:{review.barcode}')
             await redis_pipe.set(f'no-feedback:{client_id}:{review.barcode}', 'True', ex=2 * 60 * 60)
     else:
         if settings.complain:
@@ -117,7 +121,7 @@ async def reply_for_cabinet(
     redis_client = get_redis_client_async()
     redis_pipe = redis_client.pipeline()
 
-    async with aiohttp.ClientSession(raise_for_status=True, timeout=2) as web_session:
+    async with aiohttp.ClientSession(raise_for_status=True) as web_session:
         tasks = [
             handle_review(
                 client_id=client_id,

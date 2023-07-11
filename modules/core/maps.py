@@ -1,7 +1,6 @@
 from app.settings import settings
 from modules.feedbacks import (reply_cabinet_handler, scan_cabinet_handler,
                                update_feedbacks_handler)
-from modules.microsoft.handlers import refresh_ms_token_handler
 from modules.wb_bot.cabinets import (handle_cabinets_add_command,
                                      handle_cabinets_command,
                                      handle_cabinets_remove_command,
@@ -28,7 +27,6 @@ PURCHASE_COMMAND_FUNCTION_MAP = {
 }
 
 EVENT_FUNCTION_MAP = {
-    settings.TRIGGERS.ms_refresh: refresh_ms_token_handler,
     settings.YMQ.scan_id: scan_cabinet_handler,
     settings.YMQ.reply_id: reply_cabinet_handler,
     settings.YMQ.update_id: update_feedbacks_handler
