@@ -5,7 +5,7 @@ from pydantic import BaseModel
 from libs.ydb import prepare_and_execute_query
 
 
-class AdminCredentialsSchema(BaseModel):
+class MSAdminCredentials(BaseModel):
     id: str
     ms_access_token: str
     ms_refresh_token: str

@@ -50,40 +50,40 @@ class WildberriesAPIClient:
         ]
 
     async def reply_to_review_async(
-            self,
-            review_id: str,
-            text: str,
-            token: str,
-            web_session: aiohttp.ClientSession
+        self,
+        review_id: str,
+        text: str,
+        token: str,
+        web_session: aiohttp.ClientSession
     ) -> None:
         request_body = {'id': review_id, 'text': text}
         async with web_session.patch(
-                url=self.base_url,
-                headers=self.get_headers(token=token),
-                json=request_body
+            url=self.base_url,
+            headers=self.get_headers(token=token),
+            json=request_body
         ) as response:
             if response.status in (401, 403):
                 raise WBAuthException
             data = await response.json()
 
         if data['error'] is True:
-            logger.error(f'Error while answering review: error: {data["errorText"]}, body: {request_body}')
+            print(f'Error while answering review: error: {data["errorText"]}, body: {request_body}')
 
     async def complain_on_review_async(
-            self,
-            review_id: str,
-            token: str,
-            web_session: aiohttp.ClientSession
+        self,
+        review_id: str,
+        token: str,
+        web_session: aiohttp.ClientSession
     ) -> None:
         request_body = {'id': review_id, 'createSupplierComplaint': True}
         async with web_session.patch(
-                url=self.base_url,
-                headers=self.get_headers(token=token),
-                json=request_body
+            url=self.base_url,
+            headers=self.get_headers(token=token),
+            json=request_body
         ) as response:
             if response.status in (401, 403):
                 raise WBAuthException
             data = await response.json()
 
         if data['error'] is True:
-            logger.error(f'Error while complaining on review: error: {data["errorText"]}, body: {request_body}')
+            print(f'Error while complaining on review: error: {data["errorText"]}, body: {request_body}')

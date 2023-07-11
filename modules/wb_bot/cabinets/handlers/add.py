@@ -1,4 +1,5 @@
 import logging
+import uuid
 from typing import Dict, List, Optional, Union
 
 from app.connections import bot, get_scan_queue
@@ -68,19 +69,13 @@ def handler(
                 reply_markup=get_back_button_markup()
             )
             return
-        cabinet = CabinetSchema.create(
-            client_id=client_id,
-            title=metadata['title'],
-            token=text
-        )
-        print('created cabinet')
 
         ms_client = get_ms_client()
-
+        print('got MS client')
         table_item_id = ms_client.copy_item(
             item_id='3A822AFD6B06B1F4!358',
             parent_reference=BASE_DIR_PARENT_REFERENCE,
-            name=f'{cabinet.id}.xlsx'
+            name=f'{str(uuid.uuid4())}.xlsx'
         )
         print('copied table')
         table_url = ms_client.create_url_for_item(
@@ -89,6 +84,13 @@ def handler(
             scope='anonymous'
         )
         print('created url')
+
+        cabinet = CabinetSchema.create(
+            client_id=client_id,
+            title=metadata['title'],
+            token=text
+        )
+        print('created cabinet')
 
         CabinetSchema.update_table_data(
             id_=cabinet.id,
