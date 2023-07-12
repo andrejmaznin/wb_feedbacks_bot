@@ -5,7 +5,7 @@ import pandas as pd
 import ydb
 from ydb import Driver
 
-from app.connections import get_driver
+from app.connections import get_driver, get_redis_client
 from app.settings import settings
 from modules.feedbacks.schemas import (BarcodeFeedbackSchema,
                                        BrandFeedbackSchema)
@@ -20,12 +20,16 @@ def import_barcode_feedbacks(ydb_driver: Driver, table_content: bytes, cabinet_i
     if len(items[0]) == 0 or len(items[0]) != len(items[1]):
         return None
 
+    redis_client = get_redis_client()
+    # pipeline = redis_client.pipeline()
+
     rows = []
     for i in range(len(items[0])):
         if not isinstance(items[0][i], int):
             continue
 
         feedback_str = pipes.quote(items[1][i]).strip("'")
+        # pipeline.delete(f'no-feedback:{cabinet_id}:{items[0][i]}')
         rows.append(
             BarcodeFeedbackSchema(
                 barcode=str(items[0][i]).encode('utf-8'),
@@ -44,6 +48,8 @@ def import_barcode_feedbacks(ydb_driver: Driver, table_content: bytes, cabinet_i
         )
     )
     ydb_driver.table_client.bulk_upsert(settings.YDB.database + '/barcode_feedbacks', rows, column_types)
+
+    # pipeline.execute()
 
 
 def import_brand_feedbacks(ydb_driver: Driver, table_content: bytes, cabinet_id: str) -> None:

@@ -1,6 +1,6 @@
 BASE_DIR_PARENT_REFERENCE = {
-    'driveId': '3a822afd6b06b1f4',
+    'driveId': '532a55923a6820a9',
     'driveType': 'personal',
-    'id': '3A822AFD6B06B1F4!360',
-    'name': 'wb-reviews'
+    'id': '532A55923A6820A9!106',
+    'name': 'wb-reviews',
 }

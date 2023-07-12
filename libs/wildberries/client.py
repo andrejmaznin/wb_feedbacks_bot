@@ -5,7 +5,7 @@ import aiohttp
 import requests
 
 from libs.wildberries.consts import WB_FEEDBACKS_API_URL, WB_HEADERS
-from libs.wildberries.exceptions import WBAuthException
+from libs.wildberries.exceptions import WBAuthException, WBCreateComplaintException
 from libs.wildberries.schemas import ReviewSchema
 
 logger = logging.getLogger(__name__)
@@ -26,7 +26,7 @@ class WildberriesAPIClient:
             url=self.base_url,
             headers=self.get_headers(token=token),
             params={
-                'take': 100,
+                'take': 50,
                 'skip': 0,
                 'hasSupplierComplaint': False,
                 'isAnswered': False,
@@ -86,4 +86,6 @@ class WildberriesAPIClient:
             data = await response.json()
 
         if data['error'] is True:
-            print(f'Error while complaining on review: error: {data["errorText"]}, body: {request_body}')
+            if 'Создание жалобы на отзыв недоступно' in data['errorText']:
+                raise WBCreateComplaintException
+        print(f'Error while complaining on review: error: {data["errorText"]}, body: {request_body}')

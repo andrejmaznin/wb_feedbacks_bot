@@ -51,6 +51,8 @@ class MSWebAPIClient:
             raise MSAuthException
 
         monitor_url = response.headers.get('Location')
+
+        print(monitor_url)
         while True:
             response = requests.get(url=monitor_url)
             data = response.json()
@@ -93,4 +95,23 @@ class MSWebAPIClient:
             headers=self.authorization_headers
         )
         if 400 <= response.status_code < 500:
+            print(response.text)
+            data = response.json()
+            if error := data.get('error'):
+                if error_code := error.get('code'):
+                    if 'accessDenied' in error_code or 'itemNotFound' in error_code:
+                        return
+
             raise MSAuthException
+
+    @handle_refresh_token
+    def get_children(self, path: str) -> list[dict]:
+        response = requests.get(
+            url=self.base_url + f'/me/drive/{path}',
+            headers=self.authorization_headers
+        )
+        if 400 <= response.status_code < 500:
+            print(response.text)
+            raise MSAuthException
+
+        return response.json()

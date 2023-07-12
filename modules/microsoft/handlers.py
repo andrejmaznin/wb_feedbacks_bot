@@ -25,3 +25,13 @@ def handle_auth_code():
         'statusCode': 200,
         'body': json.dumps({'success': True})
     }
+
+
+@blueprint.get('/admin/children')
+def get_folder_children():
+    ms_client = get_ms_client()
+
+    return {
+        'statusCode': 200,
+        'contents': ms_client.get_children(path=request.args.get('path'))
+    }

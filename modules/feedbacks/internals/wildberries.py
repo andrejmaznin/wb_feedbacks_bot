@@ -8,7 +8,7 @@ from redis.asyncio.client import Pipeline
 
 from app.connections import get_redis_client, get_redis_client_async
 from libs.wildberries import WildberriesAPIClient, get_wb_client
-from libs.wildberries.exceptions import WBAuthException
+from libs.wildberries.exceptions import WBAuthException, WBCreateComplaintException
 from libs.wildberries.schemas import ReviewSchema
 from libs.ydb.utils import prepare_and_execute_query_async
 from modules.cabinets import CabinetSchema
@@ -20,21 +20,28 @@ def scan_cabinet(cabinet: CabinetSchema, client_id: str) -> List[ReviewSchema]:
     wb_client = get_wb_client()
 
     reviews = wb_client.get_unanswered_reviews(token=cabinet.token)
-    redis_keys = redis_client.mget(
+    no_feedback_keys = redis_client.mget(
         keys=[
-            f'no-feedback:{client_id}:{review.barcode}'
+            f'no-feedback:{cabinet.id}:{review.barcode}'
             for review in reviews
         ]
     )
-
+    complained_keys = redis_client.mget(
+        keys=[
+            f'complained:{review.id}'
+            for review in reviews
+        ]
+    )
+    print('Reviews from WB:', len(reviews))
     reviews_to_reply = []
-    for rvalue, review in zip(redis_keys, reviews):
-        if rvalue is None:
+    for no_feedback, complained, review in zip(no_feedback_keys, complained_keys, reviews):
+        if no_feedback is None:
             if 1 <= review.stars <= 3:
-                if review.has_complaint:
+                if complained is None:
                     reviews_to_reply.append(review)
             else:
                 reviews_to_reply.append(review)
+    print('Reviews to reply:', len(reviews_to_reply))
     return reviews_to_reply
 
 
@@ -57,10 +64,12 @@ async def get_positive_feedback_text(cabinet_id: str, review: ReviewSchema) -> O
         cabinetId=cabinet_id,
         brand=review.brand
     )
-    print(f'Review: {review.id}, Feedbacks for brand {review.brand} and cabinet {cabinet_id}',
-          json.loads(rows[0].pos_feedbacks))
-    feedbacks = json.loads(rows[0].pos_feedbacks)
-    return choice(feedbacks) if feedbacks else None
+    if rows:
+        feedbacks = json.loads(rows[0].pos_feedbacks)
+        feedback = choice(feedbacks)
+        return feedback.decode('utf-8') if isinstance(feedback, bytes) else feedback
+
+    return None
 
 
 async def get_negative_feedback_text(client_id: str) -> Optional[str]:
@@ -98,15 +107,19 @@ async def handle_review(
             except WBAuthException:
                 print('Error while replying to review')
         else:
-            print('Setting Redis key', f'no-feedback:{client_id}:{review.barcode}')
-            await redis_pipe.set(f'no-feedback:{client_id}:{review.barcode}', 'True', ex=2 * 60 * 60)
+            await redis_pipe.set(f'no-feedback:{cabinet.id}:{review.barcode}', 'True', ex=2 * 60 * 60)
     else:
         if settings.complain:
-            await wb_client.complain_on_review_async(
-                review_id=review.id,
-                token=cabinet.token,
-                web_session=web_session
-            )
+            try:
+                await wb_client.complain_on_review_async(
+                    review_id=review.id,
+                    token=cabinet.token,
+                    web_session=web_session
+                )
+                await redis_pipe.set(f'complained:{review.id}', 'True', ex=2 * 24 * 60 * 60)
+
+            except WBCreateComplaintException:
+                await redis_pipe.set(f'complained:{review.id}', 'True', ex=2 * 24 * 60 * 60)
 
 
 async def reply_for_cabinet(
@@ -121,7 +134,7 @@ async def reply_for_cabinet(
     redis_client = get_redis_client_async()
     redis_pipe = redis_client.pipeline()
 
-    async with aiohttp.ClientSession(raise_for_status=True) as web_session:
+    async with aiohttp.ClientSession(raise_for_status=False) as web_session:
         tasks = [
             handle_review(
                 client_id=client_id,

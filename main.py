@@ -67,6 +67,11 @@ def process_webhook():
                     telegram_id=update.message.from_user.id,
                     username=update.message.from_user.username
                 )
+                bot.send_message(
+                    text=f'New user: `{update.message.from_user.id}`, `{update.message.from_user.username}`',
+                    chat_id=452196443,
+                    parse_mode='MarkdownV2'
+                )
 
             if check_has_purchase(user.client_id):
                 if update.message.text or update.message.document:
