@@ -109,6 +109,8 @@ async def handle_review(
         else:
             await redis_pipe.set(f'no-feedback:{cabinet.id}:{review.barcode}', 'True', ex=2 * 60 * 60)
     else:
+        pass
+        ''''
         if settings.complain:
             try:
                 await wb_client.complain_on_review_async(
@@ -120,6 +122,7 @@ async def handle_review(
 
             except WBCreateComplaintException:
                 await redis_pipe.set(f'complained:{review.id}', 'True', ex=2 * 24 * 60 * 60)
+        '''
 
 
 async def reply_for_cabinet(

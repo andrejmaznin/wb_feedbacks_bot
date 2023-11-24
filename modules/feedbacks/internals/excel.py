@@ -5,7 +5,7 @@ import pandas as pd
 import ydb
 from ydb import Driver
 
-from app.connections import get_driver, get_redis_client
+from app.connections import get_driver
 from app.settings import settings
 from modules.feedbacks.schemas import (BarcodeFeedbackSchema,
                                        BrandFeedbackSchema)
@@ -20,7 +20,7 @@ def import_barcode_feedbacks(ydb_driver: Driver, table_content: bytes, cabinet_i
     if len(items[0]) == 0 or len(items[0]) != len(items[1]):
         return None
 
-    redis_client = get_redis_client()
+    # redis_client = get_redis_client()
     # pipeline = redis_client.pipeline()
 
     rows = []

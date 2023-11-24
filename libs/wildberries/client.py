@@ -17,8 +17,7 @@ class WildberriesAPIClient:
     @staticmethod
     def get_headers(token: str):
         return {
-            'Authorization': token,
-            **WB_HEADERS
+            'Authorization': token
         }
 
     def get_unanswered_reviews(self, token: str) -> List[ReviewSchema]:
@@ -26,7 +25,7 @@ class WildberriesAPIClient:
             url=self.base_url,
             headers=self.get_headers(token=token),
             params={
-                'take': 50,
+                'take': 100,
                 'skip': 0,
                 'hasSupplierComplaint': False,
                 'isAnswered': False,
@@ -45,7 +44,6 @@ class WildberriesAPIClient:
                 stars=review['productValuation'],
                 barcode=str(review['productDetails']['nmId']),
                 brand=review['productDetails']['brandName'],
-                has_complaint=review['isCreationSupplierComplaint']
             ) for review in reviews
         ]
 
@@ -60,7 +58,8 @@ class WildberriesAPIClient:
         async with web_session.patch(
             url=self.base_url,
             headers=self.get_headers(token=token),
-            json=request_body
+            json=request_body,
+            timeout=2
         ) as response:
             if response.status in (401, 403):
                 raise WBAuthException
@@ -79,7 +78,8 @@ class WildberriesAPIClient:
         async with web_session.patch(
             url=self.base_url,
             headers=self.get_headers(token=token),
-            json=request_body
+            json=request_body,
+            timeout=2
         ) as response:
             if response.status in (401, 403):
                 raise WBAuthException

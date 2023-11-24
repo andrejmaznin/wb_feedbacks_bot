@@ -9,4 +9,3 @@ class ReviewSchema(BaseModel):
     text: Optional[str] = None
     barcode: str
     brand: str
-    has_complaint: bool
