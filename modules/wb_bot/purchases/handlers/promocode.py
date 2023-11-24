@@ -28,7 +28,7 @@ def handler(
         )
         return
 
-    if not text or not text.isalpha():
+    if not text:
         bot.send_message(
             chat_id=message.from_user.id,
             text='Не поняли вас',

@@ -1,8 +1,7 @@
 from typing import Dict, List, Optional, Union
 
 from app.connections import bot
-from modules.cabinets.internals import (delete_invalid_cabinets_for_client,
-                                        get_formatted_list_of_cabinets)
+from modules.cabinets.internals import (get_formatted_list_of_cabinets)
 from modules.cabinets.schemas import CabinetSchema
 from modules.commands import Commands, finish_command, initiate_command
 from modules.wb_bot.markups.cabinets import get_cabinets_reply_markup
@@ -54,6 +53,12 @@ def handler(
         )
         bot.send_message(
             chat_id=message.from_user.id,
+            text='`Внимание\!` Обязательно закройте вкладку с онлайн\-таблицей с ответами на отзывы перед удалением кабинета',
+            reply_markup=get_back_button_markup(),
+            parse_mode='MarkdownV2'
+        )
+        bot.send_message(
+            chat_id=message.from_user.id,
             text='Введите название кабинета из списка выше',
             reply_markup=get_back_button_markup()
         )
@@ -70,7 +75,7 @@ def handler(
             text='Введите название кабинета из списка выше',
             reply_markup=get_back_button_markup()
         )
-        
+
 
     elif command == '◀️ Назад':
         finish_command(

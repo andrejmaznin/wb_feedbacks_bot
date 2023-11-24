@@ -64,7 +64,6 @@ async def reply_cabinet_handler(message: Dict) -> None:
         )
 
     except Exception as e:
-        logger.error(f'Error while replying to feedbacks {e}', exc_info=True)
         raise e
 
 

@@ -73,7 +73,7 @@ def handler(
         ms_client = get_ms_client()
         print('got MS client')
         table_item_id = ms_client.copy_item(
-            item_id='3A822AFD6B06B1F4!358',
+            item_id='532A55923A6820A9!107',
             parent_reference=BASE_DIR_PARENT_REFERENCE,
             name=f'{str(uuid.uuid4())}.xlsx'
         )
